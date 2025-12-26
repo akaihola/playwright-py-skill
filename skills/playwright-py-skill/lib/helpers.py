@@ -204,7 +204,7 @@ def authenticate(
 
     # Wait for navigation or success indicator
     try:
-        page.wait_for_navigation(wait_until="networkidle", timeout=5000)
+        page.wait_for_load_state("networkidle", timeout=5000)
     except:
         final_selectors = {**default_selectors, **(selectors or {})}
         page.wait_for_selector(
@@ -249,8 +249,8 @@ def extract_table_data(page: Page, table_selector: str) -> Optional[Dict[str, An
             const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => {{
                 const cells = Array.from(tr.querySelectorAll('td'));
                 if (headers.length > 0) {{
-                    return cells.reduce((obj, cell, index) => {{
-                        obj[headers[index] || `column_${index}`] = cell.textContent?.trim();
+                    return cells.reduce((obj, cell, i) => {{
+                        obj[headers[i] || `column_${{i}}`] = cell.textContent?.trim();
                         return obj;
                     }}, {{}});
                 }} else {{

@@ -212,6 +212,8 @@ def main():
         spec = importlib.util.spec_from_file_location("temp_module", temp_file)
         if spec is None:
             raise RuntimeError(f"Failed to load module spec from {temp_file}")
+        if spec.loader is None:
+            raise RuntimeError(f"Failed to load module loader from {temp_file}")
         module = importlib.util.module_from_spec(spec)
         sys.modules["temp_module"] = module
         spec.loader.exec_module(module)
