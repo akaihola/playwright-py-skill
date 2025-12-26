@@ -51,7 +51,17 @@ def get_code_to_execute():
         print(f"📄 Executing file: {file_path}")
         return file_path.read_text()
 
-    # Case 2: Inline code provided as argument
+    # Case 2: File path-like argument but file doesn't exist (likely race condition)
+    if args and (".py" in args[0] or "/" in args[0] or "\\" in args[0]):
+        print(f"❌ File not found: {args[0]}", file=sys.stderr)
+        print(
+            "⏱️  This may be a race condition - the file may still be being written.",
+            file=sys.stderr,
+        )
+        print("💡 Try running the command again or wait a moment.", file=sys.stderr)
+        sys.exit(1)
+
+    # Case 3: Inline code provided as argument
     if args:
         print("⚡ Executing inline code")
         return " ".join(args)

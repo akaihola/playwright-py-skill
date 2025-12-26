@@ -12,6 +12,24 @@ Common installation paths:
 - Manual global: `~/.claude/skills/playwright-py-skill`
 - Project-specific: `<project>/.claude/skills/playwright-py-skill`
 
+## CRITICAL: Sequential Tool Usage
+
+When writing and executing Playwright scripts, ALWAYS use Write and Bash tools in separate responses:
+
+❌ **DO NOT use parallel execution (causes race condition):**
+```
+Write: create /tmp/playwright-test.py
+Bash: uv run run.py /tmp/playwright-test.py  <-- Executes before Write completes!
+```
+
+✅ **ALWAYS use sequential execution:**
+```
+Response 1: Write /tmp/playwright-test.py
+Response 2: Bash: cd $SKILL_DIR && uv run run.py /tmp/playwright-test.py
+```
+
+This prevents race conditions where Bash executes before the file is fully written.
+
 # Playwright Browser Automation
 
 General-purpose browser automation skill. I'll write custom Playwright code for any automation task you request and execute it via the universal executor.
