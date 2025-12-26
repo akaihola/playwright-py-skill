@@ -1,7 +1,6 @@
 """Tests for Basic Browser Automation example from API_REFERENCE.md."""
 
 import re
-import pytest
 from pathlib import Path
 from textwrap import dedent
 from playwright.sync_api import sync_playwright
