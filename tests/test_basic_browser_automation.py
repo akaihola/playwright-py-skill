@@ -14,6 +14,7 @@ class TestBasicBrowserAutomation:
 
         This test:
         - Extracts code from API_REFERENCE.md at runtime
+        - Modifies and evaluates the extracted code
         - Verifies browser launches without errors
         - Verifies context is created with correct viewport
         - Verifies page navigates successfully
@@ -48,50 +49,38 @@ class TestBasicBrowserAutomation:
         assert "new_page" in extracted_code
         assert "goto" in extracted_code
 
-        # Execute the example with modifications for testing
-        with sync_playwright() as p:
-            # Launch browser (headless=True for CI)
-            browser = p.chromium.launch(
-                headless=True,  # Modified for CI
-                slow_mo=50,
+        # Modify the extracted code for testing:
+        # 1. Replace headless=False with headless=True for CI
+        # 2. Replace https://example.com with test_server_url
+        # 3. Replace "# Your automation here" with assertions
+        modified_code = (
+            extracted_code.replace(
+                "headless=False,  # Set to True for headless mode", "headless=True,"
             )
-
-            # Verify browser launched successfully
-            assert browser is not None
-            assert browser.is_connected()
-
-            # Create context with viewport
-            context = browser.new_context(
-                viewport={"width": 1280, "height": 720},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            .replace(
+                'page.goto("https://example.com", wait_until="networkidle")',
+                f'page.goto("{test_server_url}", wait_until="networkidle")',
             )
+            .replace(
+                "# Your automation here",
+                f"""# Test assertions
+    assert browser is not None
+    assert browser.is_connected()
+    assert context is not None
+    assert page is not None
+    viewport_size = page.viewport_size
+    assert viewport_size["width"] == 1280
+    assert viewport_size["height"] == 720
+    assert page.url.rstrip("/") == "{test_server_url.rstrip("/")}"
+    assert "Welcome" in page.content() or "Example Domain" in page.content()""",
+            )
+        )
 
-            # Verify context created successfully
-            assert context is not None
-
-            # Create page
-            page = context.new_page()
-
-            # Verify page created successfully
-            assert page is not None
-
-            # Verify viewport is correct (viewport is set on the page)
-            viewport_size = page.viewport_size
-            assert viewport_size["width"] == 1280
-            assert viewport_size["height"] == 720
-
-            # Navigate to test server instead of example.com
-            page.goto(test_server_url, wait_until="networkidle")
-
-            # Verify navigation succeeded
-            assert page.url.rstrip("/") == test_server_url.rstrip("/")
-            assert "Welcome" in page.content() or "Example Domain" in page.content()
-
-            # Close browser
-            browser.close()
-
-            # Verify browser closed successfully
-            assert not browser.is_connected()
+        # Execute the modified code
+        exec(
+            modified_code,
+            {"sync_playwright": sync_playwright, "test_server_url": test_server_url},
+        )
 
     def test_basic_browser_automation_external_url(self):
         """Test Basic Browser Automation example with external URL.
@@ -99,46 +88,44 @@ class TestBasicBrowserAutomation:
         This version uses https://example.com to demonstrate the example
         works with external URLs as documented.
         """
-        with sync_playwright() as p:
-            # Launch browser (headless=True for CI)
-            browser = p.chromium.launch(
-                headless=True,
-                slow_mo=50,
-            )
+        # Get the path to API_REFERENCE.md
+        api_ref_path = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "skills",
+            "playwright-py-skill",
+            "API_REFERENCE.md",
+        )
 
-            # Verify browser launched successfully
-            assert browser is not None
-            assert browser.is_connected()
+        # Read API_REFERENCE.md to extract the Basic Browser Automation example
+        with open(api_ref_path, "r") as f:
+            content = f.read()
 
-            # Create context with viewport
-            context = browser.new_context(
-                viewport={"width": 1280, "height": 720},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            )
+        # Extract the Basic Browser Automation code block
+        pattern = r"### Basic Browser Automation\s*```python\s*(.*?)```"
+        match = re.search(pattern, content, re.DOTALL)
 
-            # Verify context created successfully
-            assert context is not None
+        assert match, "Basic Browser Automation example not found in API_REFERENCE.md"
+        extracted_code = match.group(1)
 
-            # Create page
-            page = context.new_page()
+        # Modify the extracted code for testing:
+        # 1. Replace headless=False with headless=True for CI
+        # 2. Replace "# Your automation here" with assertions
+        modified_code = extracted_code.replace(
+            "headless=False,  # Set to True for headless mode", "headless=True,"
+        ).replace(
+            "# Your automation here",
+            """# Test assertions
+    assert browser is not None
+    assert browser.is_connected()
+    assert context is not None
+    assert page is not None
+    viewport_size = page.viewport_size
+    assert viewport_size["width"] == 1280
+    assert viewport_size["height"] == 720
+    assert page.url == "https://example.com/"
+    assert "Example Domain" in page.content()""",
+        )
 
-            # Verify page created successfully
-            assert page is not None
-
-            # Verify viewport is correct (viewport is set on the page)
-            viewport_size = page.viewport_size
-            assert viewport_size["width"] == 1280
-            assert viewport_size["height"] == 720
-
-            # Navigate to external URL as shown in the example
-            page.goto("https://example.com", wait_until="networkidle")
-
-            # Verify navigation succeeded
-            assert page.url == "https://example.com/"
-            assert "Example Domain" in page.content()
-
-            # Close browser
-            browser.close()
-
-            # Verify browser closed successfully
-            assert not browser.is_connected()
+        # Execute the modified code
+        exec(modified_code, {"sync_playwright": sync_playwright})
