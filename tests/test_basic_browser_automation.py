@@ -3,6 +3,7 @@
 import os
 import re
 import pytest
+from textwrap import dedent
 from playwright.sync_api import sync_playwright
 
 
@@ -63,16 +64,20 @@ class TestBasicBrowserAutomation:
             )
             .replace(
                 "# Your automation here",
-                f"""# Test assertions
-    assert browser is not None
-    assert browser.is_connected()
-    assert context is not None
-    assert page is not None
-    viewport_size = page.viewport_size
-    assert viewport_size["width"] == 1280
-    assert viewport_size["height"] == 720
-    assert page.url.rstrip("/") == "{test_server_url.rstrip("/")}"
-    assert "Welcome" in page.content() or "Example Domain" in page.content()""",
+                dedent(
+                    f"""\
+                    # Test assertions
+                    assert browser is not None
+                    assert browser.is_connected()
+                    assert context is not None
+                    assert page is not None
+                    viewport_size = page.viewport_size
+                    assert viewport_size["width"] == 1280
+                    assert viewport_size["height"] == 720
+                    assert page.url.rstrip("/") == "{test_server_url.rstrip("/")}"
+                    assert "Welcome" in page.content() or "Example Domain" in page.content()
+                    """
+                ).replace("\n", "\n    "),
             )
         )
 
@@ -115,16 +120,20 @@ class TestBasicBrowserAutomation:
             "headless=False,  # Set to True for headless mode", "headless=True,"
         ).replace(
             "# Your automation here",
-            """# Test assertions
-    assert browser is not None
-    assert browser.is_connected()
-    assert context is not None
-    assert page is not None
-    viewport_size = page.viewport_size
-    assert viewport_size["width"] == 1280
-    assert viewport_size["height"] == 720
-    assert page.url == "https://example.com/"
-    assert "Example Domain" in page.content()""",
+            dedent(
+                """\
+                # Test assertions
+                assert browser is not None
+                assert browser.is_connected()
+                assert context is not None
+                assert page is not None
+                viewport_size = page.viewport_size
+                assert viewport_size["width"] == 1280
+                assert viewport_size["height"] == 720
+                assert page.url == "https://example.com/"
+                assert "Example Domain" in page.content()
+                """
+            ).replace("\n", "\n    "),
         )
 
         # Execute the modified code
