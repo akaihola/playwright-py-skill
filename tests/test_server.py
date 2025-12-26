@@ -1,6 +1,5 @@
 """Test the test server fixture."""
 
-import pytest
 
 
 def test_index_page(test_server_url):

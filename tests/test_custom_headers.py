@@ -1,14 +1,15 @@
 """ "Tests for Custom HTTP Headers feature via environment variables."""
 
-import os
 import sys
-import pytest
+import re
 import json
+from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 # Add parent directory to path to import helpers
 sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), "..", "skills", "playwright-py-skill")
+    0,
+    str(Path(__file__).parent.parent / "skills" / "playwright-py-skill"),
 )
 
 from lib.helpers import (
@@ -230,7 +231,6 @@ class TestHeadersInHttpRequests:
 
             # Extract JSON from <pre> tag (Flask dev server wraps JSON response)
             page_content = page.content()
-            import re
 
             json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
             if json_match:
@@ -268,7 +268,6 @@ class TestHeadersInHttpRequests:
 
             # Extract JSON from <pre> tag (Flask dev server wraps JSON response)
             page_content = page.content()
-            import re
 
             json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
             if json_match:
@@ -305,7 +304,6 @@ class TestHeadersInHttpRequests:
 
                 # Extract JSON from <pre> tag (Flask dev server wraps JSON response)
                 page_content = page.content()
-                import re
 
                 json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
                 if json_match:
