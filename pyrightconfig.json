@@ -1,0 +1,12 @@
+{
+  "include": [
+    "skills/**/*.py"
+  ],
+  "exclude": [
+    "**/.temp-execution-*.py"
+  ],
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "standard",
+  "venvPath": ".venv",
+  "venv": "."
+}
