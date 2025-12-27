@@ -152,7 +152,7 @@ def selectors():
         <!DOCTYPE html>
         <html><head><title>Selectors Test</title></head>
         <body>
-        <h1>Selectors Test Page</h1>
+        <h2>Selectors Test Page</h2>
         <p>Action Log:</p>
         <pre id="action-log" style="background:#f0f0f0;padding:10px;border:1px solid #ccc;"></pre>
         <script>
@@ -163,13 +163,22 @@ def selectors():
             }
             function setupEventListeners() {
                 var allElements = document.querySelectorAll('button, input, h1, div[id]');
+                var wrapperIds = [
+                    'data-attributes-section',
+                    'role-based-section',
+                    'text-content-section',
+                    'semantic-html-section',
+                    'avoid-patterns-section',
+                    'advanced-locators-section',
+                    'nth-element-section'
+                ];
                 for (var i = 0; i < allElements.length; i++) {
                     var el = allElements[i];
                     if (el.tagName === 'INPUT') {
                         el.addEventListener('input', function(e) {
                             log('fill', this.id, e.target.value);
                         });
-                    } else {
+                    } else if (wrapperIds.indexOf(el.id) === -1) {
                         el.addEventListener('click', function(e) {
                             e.preventDefault();
                             log('click', this.id);
@@ -180,23 +189,34 @@ def selectors():
             document.addEventListener('DOMContentLoaded', setupEventListeners);
         </script>
         <hr>
+        <div id="data-attributes-section">
+        <h2>Data Attribute Selectors</h2>
+        <hr>
         <h2>Data Attribute Selectors</h2>
         <button id="submit-button" data-testid="submit-button">Data Button</button>
         <input id="user-input" data-cy="user-input" type="text" placeholder="User Input">
         <hr>
+        </div>
+        <div id="role-based-section">
         <h2>Role-Based Selectors</h2>
-        <button id="submit-role" role="button" aria-label="Submit Button">Submit (Role)</button>
-        <input id="email-role" role="textbox" aria-label="Email Address" type="text" placeholder="Email (Role)">
+        <button id="submit-role" role="button" aria-label="Submit">Submit (Role)</button>
+        <input id="email-role" role="textbox" aria-label="Email" type="text" placeholder="Email (Role)">
         <h1 id="main-heading">Main Heading</h1>
+        </div>
         <hr>
+        <div id="text-content-section">
         <h2>Text Content Selectors</h2>
         <div id="signin-text" onclick="void(0)">Sign in</div>
         <div id="welcome-text" onclick="void(0)">Welcome Back</div>
+        </div>
         <hr>
+        <div id="semantic-html-section">
         <h2>Semantic HTML Selectors</h2>
-        <button id="form-submit" type="submit">Submit Form</button>
-        <input id="email-field" name="email" type="text" placeholder="Email (name attr)">
+        <button id="form-submit" type="submit">Save Changes</button>
+        <input id="email-field" name="email" type="text" placeholder="Username (name attr)">
+        </div>
         <hr>
+        <div id="advanced-locators-section">
         <h2>Advanced Locator Patterns</h2>
         <table>
             <thead><tr><th>Name</th><th>Status</th><th>Action</th></tr></thead>
@@ -208,22 +228,27 @@ def selectors():
                 </tr>
                 <tr id="row-jane">
                     <td>Jane Smith</td>
-                    <td>Active</td>
+                    <td>Pending</td>
                     <td><button id="edit-jane" class="edit">Edit</button></td>
                 </tr>
                 <tr id="row-bob">
                     <td>Bob Johnson</td>
-                    <td>Inactive</td>
+                    <td>Offline</td>
                     <td><button id="edit-bob" class="edit">Edit</button></td>
                 </tr>
             </tbody>
         </table>
+        </div>
+        <div id="nth-element-section">
         <h2>Nth Element Test</h2>
         <button id="button-1">Button 1</button>
         <button id="button-2">Button 2</button>
-        <button id="button-3" disabled>Button 3</button>
+        <button id="button-3">Button 3</button>
         <button id="button-4" disabled>Button 4</button>
+        <button id="button-5" disabled>Button 5</button>
+        </div>
         <hr>
+        <div id="avoid-patterns-section">
         <h2>AVOID / LAST RESORT Patterns (Bad Practices)</h2>
         <button id="btn-primary" class="btn-primary">Class Button</button>
         <button id="submit" >ID Button</button>
@@ -231,6 +256,7 @@ def selectors():
             <form>
                 <button id="nested-button" onclick="event.preventDefault()">Nested Button</button>
             </form>
+        </div>
         </div>
         </body></html>"""
     )

@@ -1,6 +1,6 @@
 """Tests for Selectors & Locators examples from API_REFERENCE.md."""
 
-import re
+import re as python_re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -22,7 +22,7 @@ def extract_selectors_locators_code():
 
     # Extract Best Practices for Selectors section
     best_pattern = r"### Best Practices for Selectors\s*```python\s*(.*?)```"
-    best_match = re.search(best_pattern, content, re.DOTALL)
+    best_match = python_re.search(best_pattern, content, python_re.DOTALL)
 
     assert best_match, (
         "Best Practices for Selectors example not found in API_REFERENCE.md"
@@ -31,7 +31,7 @@ def extract_selectors_locators_code():
 
     # Extract Advanced Locator Patterns section
     advanced_pattern = r"### Advanced Locator Patterns\s*```python\s*(.*?)```"
-    advanced_match = re.search(advanced_pattern, content, re.DOTALL)
+    advanced_match = python_re.search(advanced_pattern, content, python_re.DOTALL)
 
     assert advanced_match, (
         "Advanced Locator Patterns example not found in API_REFERENCE.md"
@@ -42,7 +42,7 @@ def extract_selectors_locators_code():
 
 
 class TestSelectorsAndLocators:
-    """Tests for the Selectors & Locators examples."""
+    """Tests for Selectors & Locators examples."""
 
     def test_selectors_locators_examples(self, test_server_url):
         """Test Selectors & Locators examples from API_REFERENCE.md.
@@ -53,6 +53,8 @@ class TestSelectorsAndLocators:
         - Verifies actions are logged correctly via action log element
         - Tests all selector strategies: data attributes, role-based, text, semantic, advanced
         """
+        best_practices_code, advanced_patterns_code = extract_selectors_locators_code()
+
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             context = browser.new_context()
@@ -62,49 +64,20 @@ class TestSelectorsAndLocators:
             # Wait for action log to be ready
             page.locator("#action-log").wait_for(state="visible")
 
-            # Execute selectors from API_REFERENCE.md examples
+            # Execute Best Practices code from API_REFERENCE.md
+            exec(best_practices_code, {"page": page, "re": python_re})
 
-            # Data attribute selectors (PREFERRED)
-            page.locator('[data-testid="submit-button"]').click()
-            page.locator('[data-cy="user-input"]').fill("text")
-
-            # Role-based selectors (GOOD)
-            page.get_by_role("button", name="Submit Button").click()
-            page.get_by_role("textbox", name="Email Address").fill("user@example.com")
-            page.get_by_role("heading", name="Main Heading").click()
-
-            # Text content selectors (GOOD)
-            page.get_by_text("Sign in").click()
-            page.get_by_text("Welcome Back").click()
-
-            # Semantic HTML selectors (OK)
-            page.locator('button[type="submit"]').click()
-            page.locator('input[name="email"]').fill("test@test.com")
-
-            # AVOID examples (included to show they work but are bad practices)
-            page.locator(".btn-primary").click()
-            page.locator("#submit").click()
-            page.locator("div.container > form > button").click()
-
-            # Advanced Locator Patterns
-            # Filter and chain locators
-            page.locator("tr").filter(has_text="John Doe").locator("button").click()
-
-            # Nth element (clicks 3rd button)
-            page.locator("button").nth(2).click()
-
-            # Combining conditions with count
-            count = page.locator("button").and_(page.locator("[disabled]")).count()
-            page.locator("#action-log").evaluate(
-                f"(el) => el.textContent += 'count disabled-buttons {count}\\n'"
+            # Modify advanced_patterns_code to add count logging after the count line
+            count_logging_code = "page.locator('#action-log').evaluate('(el, c) => el.textContent += \"count disabled-buttons \" + c + \"\\\\n\"', nth_page.locator('button').and_(nth_page.locator('[disabled]')).count())\n"
+            modified_advanced_code = advanced_patterns_code.replace(
+                "nth_page.locator('button').and_(nth_page.locator('[disabled]')).count()\n\n# Parent/child navigation",
+                count_logging_code + "# Parent/child navigation",
             )
 
-            # Parent/child navigation
-            cell = page.locator("td").filter(has_text="Jane Smith")
-            row = cell.locator("..")
-            row.locator(".edit").click()
+            # Execute Advanced Locator Patterns from API_REFERENCE.md
+            exec(modified_advanced_code, {"page": page, "re": python_re})
 
-            # Get the action log and verify
+            # Get action log and verify
             log_content = page.locator("#action-log").text_content()
             log_lines = [
                 line.strip() for line in log_content.strip().split("\n") if line.strip()
@@ -126,9 +99,9 @@ class TestSelectorsAndLocators:
                 "click nested-button",
                 "click container-div",
                 "click edit-john",
-                "click form-submit",
+                "click button-3",
                 "count disabled-buttons 2",
-                "click edit-jane",
+                "click edit-john",
             ]
 
             assert log_lines == expected_log, (
