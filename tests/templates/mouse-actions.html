@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Mouse Actions Test</title>
+  </head>
+  <body>
+    <h2>Mouse Actions Test Page</h2>
+    <p>Action Log:</p>
+    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
+    <script src="/static/mouse-actions.js"></script>
+    <hr />
+
+    <!-- All click variations on ONE button -->
+    <h2>Click Variations</h2>
+    <button id="test-button" style="width: 200px; height: 100px;">Test Button</button>
+
+    <hr />
+
+    <!-- Hover test -->
+    <h2>Hover Test</h2>
+    <div id="menu-item" class="menu-item">Menu Item (hover me)</div>
+
+    <hr />
+
+    <!-- Drag and drop test -->
+    <h2>Drag and Drop Test</h2>
+    <div id="source" draggable="true" style="width: 100px; height: 50px; background: lightblue; margin: 10px;">Drag Me</div>
+    <div id="target" style="width: 100px; height: 50px; background: lightgray; margin: 10px;">Drop Zone</div>
+  </body>
+</html>
