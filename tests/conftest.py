@@ -99,6 +99,12 @@ def mouse_actions():
     return render_template("mouse-actions.html")
 
 
+@app.route("/keyboard-actions")
+def keyboard_actions():
+    """Test page with interactive keyboard action elements."""
+    return render_template("keyboard-actions.html")
+
+
 @pytest.fixture(scope="session")
 def test_server_url():
     """Start Flask server on available port and return URL."""
