@@ -121,41 +121,35 @@ def test_feature_name(page: Page):
 
 ```python
 # PREFERRED: Data attributes (most stable)
-data_attrs_page = page.locator('#data-attributes-section')
-data_attrs_page.locator('[data-testid="submit-button"]').click()
-data_attrs_page.locator('[data-cy="user-input"]').fill('text')
+page.locator('[data-testid="submit-button"]').click()
+page.locator('[data-cy="user-input"]').fill('text')
 
 # GOOD: Role-based selectors (accessible)
-role_based_page = page.locator('#role-based-section')
-role_based_page.get_by_role("button", name="Submit").click()
-role_based_page.get_by_role("textbox", name="Email").fill('user@example.com')
-role_based_page.get_by_role("heading", level=1).click()
+page.get_by_role("button", name="Submit").click()
+page.get_by_role("textbox", name="Email").fill('user@example.com')
+page.get_by_role("heading", level=1).click()
 
 # GOOD: Text content (for unique text)
-text_content_page = page.locator('#text-content-section')
-text_content_page.get_by_text("Sign in").click()
-text_content_page.get_by_text(re.compile("welcome back", re.IGNORECASE)).click()
+page.get_by_text("Sign in").click()
+page.get_by_text(re.compile("welcome back", re.IGNORECASE)).click()
 
 # OK: Semantic HTML
-semantic_page = page.locator('#semantic-html-section')
-semantic_page.locator('button[type="submit"]').click()
-semantic_page.locator('input[name="email"]').fill('test@test.com')
+page.locator('button[type="submit"]').click()
+page.locator('input[name="email"]').fill('test@test.com')
 
 # AVOID: Classes and IDs (can change frequently)
-avoid_page = page.locator('#avoid-patterns-section')
-avoid_page.locator('.btn-primary').click()  # Avoid
-avoid_page.locator('#submit').click()       # Avoid
+page.locator('.btn-primary').click()  # Avoid
+page.locator('#submit').click()       # Avoid
 
 # LAST RESORT: Complex CSS/XPath
-avoid_page.locator('div.container > form > button').click()  # Fragile
+page.locator('div.container > form > button').click()  # Fragile
 ```
 
 ### Advanced Locator Patterns
 
 ```python
 # Filter and chain locators
-advanced_page = page.locator('#advanced-locators-section')
-row = advanced_page.locator('tr').filter(has_text="John Doe")
+row = page.locator('tr').filter(has_text="John Doe")
 row.locator('button').click()
 
 # Nth element
@@ -166,7 +160,7 @@ nth_page.locator('button').nth(2).click()
 nth_page.locator('button').and_(nth_page.locator('[disabled]')).count()
 
 # Parent/child navigation
-cell = advanced_page.locator('td').filter(has_text="Active")
+cell = page.locator('td').filter(has_text="Active")
 row = cell.locator('..')
 row.locator('button.edit').click()
 ```
