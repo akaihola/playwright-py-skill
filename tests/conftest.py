@@ -93,6 +93,12 @@ def selectors():
     return render_template("selectors.html")
 
 
+@app.route("/mouse-actions")
+def mouse_actions():
+    """Test page with interactive mouse action elements."""
+    return render_template("mouse-actions.html")
+
+
 @pytest.fixture(scope="session")
 def test_server_url():
     """Start Flask server on available port and return URL."""
