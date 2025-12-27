@@ -70,14 +70,25 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/success")
+def success():
+    """Success page with message div for Test Structure pattern tests."""
+    return dedent(
+        """\
+        <!DOCTYPE html>
+        <html><head><title>Success</title></head>
+        <body>
+        <div class="message">Success!</div>
+        <p><a href="/">Home</a></p>
+        </body></html>"""
+    )
+
+
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     """Contact form (name/email/message fields)."""
     if request.method == "POST":
-        return dedent(
-            """\
-            <html><body><h1>Thank you!</h1><p>Your message has been sent.</p><a href="/">Home</a></body></html>"""
-        )
+        return redirect(url_for("success"))
     return dedent(
         """\
         <!DOCTYPE html>
@@ -86,7 +97,7 @@ def contact():
         <form method="POST"><label>Name:</label><input name="name" type="text"><br>
         <label>Email:</label><input name="email" type="email"><br>
         <label>Message:</label><textarea name="message"></textarea><br>
-        <button type="submit">Send</button></form></body></html>"""
+        <button type="submit" data-testid="submit-button">Send</button></form></body></html>"""
     )
 
 
