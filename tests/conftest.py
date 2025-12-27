@@ -144,6 +144,98 @@ def headers():
     return jsonify(dict(request.headers))
 
 
+@app.route("/selectors")
+def selectors():
+    """Test page with elements for selector/locator examples."""
+    return dedent(
+        """\
+        <!DOCTYPE html>
+        <html><head><title>Selectors Test</title></head>
+        <body>
+        <h1>Selectors Test Page</h1>
+        <p>Action Log:</p>
+        <pre id="action-log" style="background:#f0f0f0;padding:10px;border:1px solid #ccc;"></pre>
+        <script>
+            window.actionLog = document.getElementById('action-log');
+            function log(type, id, value) {
+                value = value || '';
+                window.actionLog.textContent += type + ' ' + id + (value ? ' ' + value : '') + '\\n';
+            }
+            function setupEventListeners() {
+                var allElements = document.querySelectorAll('button, input, h1, div[id]');
+                for (var i = 0; i < allElements.length; i++) {
+                    var el = allElements[i];
+                    if (el.tagName === 'INPUT') {
+                        el.addEventListener('input', function(e) {
+                            log('fill', this.id, e.target.value);
+                        });
+                    } else {
+                        el.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            log('click', this.id);
+                        });
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', setupEventListeners);
+        </script>
+        <hr>
+        <h2>Data Attribute Selectors</h2>
+        <button id="submit-button" data-testid="submit-button">Data Button</button>
+        <input id="user-input" data-cy="user-input" type="text" placeholder="User Input">
+        <hr>
+        <h2>Role-Based Selectors</h2>
+        <button id="submit-role" role="button" aria-label="Submit Button">Submit (Role)</button>
+        <input id="email-role" role="textbox" aria-label="Email Address" type="text" placeholder="Email (Role)">
+        <h1 id="main-heading">Main Heading</h1>
+        <hr>
+        <h2>Text Content Selectors</h2>
+        <div id="signin-text" onclick="void(0)">Sign in</div>
+        <div id="welcome-text" onclick="void(0)">Welcome Back</div>
+        <hr>
+        <h2>Semantic HTML Selectors</h2>
+        <button id="form-submit" type="submit">Submit Form</button>
+        <input id="email-field" name="email" type="text" placeholder="Email (name attr)">
+        <hr>
+        <h2>Advanced Locator Patterns</h2>
+        <table>
+            <thead><tr><th>Name</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+                <tr id="row-john">
+                    <td>John Doe</td>
+                    <td>Active</td>
+                    <td><button id="edit-john" class="edit">Edit</button></td>
+                </tr>
+                <tr id="row-jane">
+                    <td>Jane Smith</td>
+                    <td>Active</td>
+                    <td><button id="edit-jane" class="edit">Edit</button></td>
+                </tr>
+                <tr id="row-bob">
+                    <td>Bob Johnson</td>
+                    <td>Inactive</td>
+                    <td><button id="edit-bob" class="edit">Edit</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Nth Element Test</h2>
+        <button id="button-1">Button 1</button>
+        <button id="button-2">Button 2</button>
+        <button id="button-3" disabled>Button 3</button>
+        <button id="button-4" disabled>Button 4</button>
+        <hr>
+        <h2>AVOID / LAST RESORT Patterns (Bad Practices)</h2>
+        <button id="btn-primary" class="btn-primary">Class Button</button>
+        <button id="submit" >ID Button</button>
+        <div id="container-div" class="container" style="border:1px solid #ccc;padding:10px;">
+            <form>
+                <button id="nested-button" onclick="event.preventDefault()">Nested Button</button>
+            </form>
+        </div>
+        </body></html>"""
+    )
+
+
 @pytest.fixture(scope="session")
 def test_server_url():
     """Start Flask server on available port and return URL."""
