@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Geolocation</title>
+  </head>
+  <body>
+    <h1>Geolocation Test</h1>
+    <button
+      onclick="navigator.geolocation.getCurrentPosition(p=&gt;alert(p.coords.latitude+','+p.coords.longitude))"
+    >
+      Get Location
+    </button>
+  </body>
+</html>
