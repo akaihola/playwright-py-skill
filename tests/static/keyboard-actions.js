@@ -17,14 +17,8 @@ function setupEventListeners() {
 
   // Key combinations events
   comboInput.addEventListener('keydown', function(e) {
-    if (e.ctrlKey || e.metaKey) {
-      if (e.key === 'a') {
-        log('keydown', 'Ctrl+A');
-      } else if (e.key === 'c') {
-        log('keydown', 'Ctrl+C');
-      } else if (e.key === 'v') {
-        log('keydown', 'Ctrl+V');
-      }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A' || e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V')) {
+      log('keydown', 'Ctrl+' + e.key.toUpperCase());
     }
   });
 
@@ -35,12 +29,16 @@ function setupEventListeners() {
   // Special keys events
   specialInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
+      e.preventDefault();
       log('keydown', 'Enter');
     } else if (e.key === 'Tab') {
+      e.preventDefault();
       log('keydown', 'Tab');
     } else if (e.key === 'Escape') {
+      e.preventDefault();
       log('keydown', 'Escape');
     } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
       log('keydown', 'ArrowDown');
     }
   });
