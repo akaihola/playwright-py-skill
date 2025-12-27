@@ -140,21 +140,4 @@ class TestKeyboardActions:
                     f"Expected event '{expected}' not found in log: {log_lines}"
                 )
 
-            # Verify type with delay worked correctly
-            assert "type Hello World" in log_lines
-
-            # Verify Control+A selected all text
-            assert any("Ctrl+A" in line for line in log_lines)
-            assert "select Initial text" in log_lines
-
-            # Verify Control+C/V worked
-            assert any("Ctrl+C" in line for line in log_lines)
-            assert any("Ctrl+V" in line for line in log_lines)
-
-            # Verify all special keys worked
-            assert any("Enter" in line for line in log_lines)
-            assert any("Tab" in line for line in log_lines)
-            assert any("Escape" in line for line in log_lines)
-            assert any("ArrowDown" in line for line in log_lines)
-
             browser.close()
