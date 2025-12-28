@@ -1,10 +1,48 @@
 #!/usr/bin/env python3
 """Minimal test server for Playwright documentation examples."""
 
+import re
 import socket
 import threading
+from pathlib import Path
+
 import pytest
 from flask import Flask, request, jsonify, redirect, url_for, session, render_template
+
+
+def extract_markdown_code(
+    section_name, markdown_file="API_REFERENCE.md", expected_substrings=None
+):
+    """Extract code block from a markdown file's section.
+
+    Args:
+        section_name: Name of the section header (e.g., "Basic Browser Automation")
+        markdown_file: Name of the markdown file in skills/playwright-py-skill/
+        expected_substrings: Optional list of strings that must be present in extracted code
+
+    Returns:
+        Extracted code block as string
+    """
+    skill_path = (
+        Path(__file__).parent.parent / "skills" / "playwright-py-skill" / markdown_file
+    )
+
+    content = skill_path.read_text()
+
+    pattern = rf"### {re.escape(section_name)}\s*```python\s*(.*?)```"
+    match = re.search(pattern, content, re.DOTALL)
+
+    assert match, f"{section_name} example not found in {markdown_file}"
+    extracted_code = match.group(1)
+
+    if expected_substrings:
+        for expected in expected_substrings:
+            assert expected in extracted_code, (
+                f"Expected '{expected}' not found in {section_name} code"
+            )
+
+    return extracted_code
+
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "test-secret-key"

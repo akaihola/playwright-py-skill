@@ -1,8 +1,9 @@
 """Tests for Selectors & Locators examples from API_REFERENCE.md."""
 
 import re as python_re
-from pathlib import Path
 from playwright.sync_api import sync_playwright
+
+from conftest import extract_markdown_code
 
 
 def extract_selectors_locators_code():
@@ -11,32 +12,8 @@ def extract_selectors_locators_code():
     Returns:
         Tuple of (best_practices_code, advanced_patterns_code)
     """
-    api_ref_path = (
-        Path(__file__).parent.parent
-        / "skills"
-        / "playwright-py-skill"
-        / "API_REFERENCE.md"
-    )
-
-    content = api_ref_path.read_text()
-
-    # Extract Best Practices for Selectors section
-    best_pattern = r"### Best Practices for Selectors\s*```python\s*(.*?)```"
-    best_match = python_re.search(best_pattern, content, python_re.DOTALL)
-
-    assert best_match, (
-        "Best Practices for Selectors example not found in API_REFERENCE.md"
-    )
-    best_practices_code = best_match.group(1)
-
-    # Extract Advanced Locator Patterns section
-    advanced_pattern = r"### Advanced Locator Patterns\s*```python\s*(.*?)```"
-    advanced_match = python_re.search(advanced_pattern, content, python_re.DOTALL)
-
-    assert advanced_match, (
-        "Advanced Locator Patterns example not found in API_REFERENCE.md"
-    )
-    advanced_patterns_code = advanced_match.group(1)
+    best_practices_code = extract_markdown_code("Best Practices for Selectors")
+    advanced_patterns_code = extract_markdown_code("Advanced Locator Patterns")
 
     return best_practices_code, advanced_patterns_code
 
