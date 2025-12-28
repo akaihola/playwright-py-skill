@@ -69,11 +69,9 @@ class TestFormInteractions:
 
             # Modify and execute Form Interactions code from API_REFERENCE.md
             # Replace file paths with actual temporary files
-            # Add waits after fill operations and before check operations for stability
             lines = extracted_code.split("\n")
             modified_code = []
             for line in lines:
-                # Replace file paths with actual temporary files
                 if "'path/to/file.pdf'" in line:
                     modified_code.append(
                         line.replace("'path/to/file.pdf'", f"'{test_file1}'")
@@ -85,18 +83,6 @@ class TestFormInteractions:
                             f"[r'{test_file2}', r'{test_file3}']",
                         )
                     )
-                elif 'page.get_by_label("I agree").check()' in line:
-                    indent = line[: len(line) - len(line.lstrip())]
-                    modified_code.append(f"{indent}page.wait_for_timeout(100)")
-                    modified_code.append(line)
-                elif 'page.get_by_label("Subscribe").uncheck()' in line:
-                    indent = line[: len(line) - len(line.lstrip())]
-                    modified_code.append(f"{indent}page.wait_for_timeout(100)")
-                    modified_code.append(line)
-                elif 'page.get_by_label("Option 2").check()' in line:
-                    indent = line[: len(line) - len(line.lstrip())]
-                    modified_code.append(f"{indent}page.wait_for_timeout(100)")
-                    modified_code.append(line)
                 else:
                     modified_code.append(line)
 
