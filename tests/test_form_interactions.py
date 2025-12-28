@@ -69,8 +69,6 @@ class TestFormInteractions:
 
             # Modify and execute Form Interactions code from API_REFERENCE.md
             # Replace file paths with actual temporary files
-            # Update file upload selectors to match HTML
-            # Replace label-based checkbox selectors with ID selectors to avoid HTTP/file:// protocol issue
             # Add waits after fill operations and before check operations for stability
             lines = extracted_code.split("\n")
             modified_code = []
@@ -88,35 +86,17 @@ class TestFormInteractions:
                         )
                     )
                 elif 'page.get_by_label("I agree").check()' in line:
-                    # Add wait before checkbox check
                     indent = line[: len(line) - len(line.lstrip())]
                     modified_code.append(f"{indent}page.wait_for_timeout(100)")
-                    modified_code.append(
-                        line.replace(
-                            'page.get_by_label("I agree").check()',
-                            'page.locator("#agree").check()',
-                        )
-                    )
+                    modified_code.append(line)
                 elif 'page.get_by_label("Subscribe").uncheck()' in line:
-                    # Add wait before checkbox uncheck
                     indent = line[: len(line) - len(line.lstrip())]
                     modified_code.append(f"{indent}page.wait_for_timeout(100)")
-                    modified_code.append(
-                        line.replace(
-                            'page.get_by_label("Subscribe").uncheck()',
-                            'page.locator("#subscribe").uncheck()',
-                        )
-                    )
+                    modified_code.append(line)
                 elif 'page.get_by_label("Option 2").check()' in line:
-                    # Add wait before radio check
                     indent = line[: len(line) - len(line.lstrip())]
                     modified_code.append(f"{indent}page.wait_for_timeout(100)")
-                    modified_code.append(
-                        line.replace(
-                            'page.get_by_label("Option 2").check()',
-                            'page.locator("#option2").check()',
-                        )
-                    )
+                    modified_code.append(line)
                 else:
                     modified_code.append(line)
 
