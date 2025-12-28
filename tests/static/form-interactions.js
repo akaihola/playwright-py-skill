@@ -48,13 +48,15 @@ function setupEventListeners() {
   });
 
   // File upload
-  var fileInput = document.getElementById("file-upload");
-  fileInput.addEventListener("change", function (e) {
-    var files = Array.from(this.files);
-    var fileNames = files.map(function (file) {
-      return file.name + ":" + file.size;
+  var fileInputs = document.querySelectorAll("input[type='file']");
+  fileInputs.forEach(function (fileInput) {
+    fileInput.addEventListener("change", function (e) {
+      var files = Array.from(this.files);
+      var fileNames = files.map(function (file) {
+        return file.name + ":" + file.size;
+      });
+      log("upload", this.id, fileNames.join(","));
     });
-    log("upload", this.id, fileNames.join(","));
   });
 }
 
