@@ -21,7 +21,7 @@ Home = "https://github.com/akaihola/playwright-py-skill"
 playwright-py-skill = "run:main"
 
 [dependency-groups]
-dev = ["pytest"]
+dev = ["pytest>=7.4.0", "flask>=3.0.0", "requests>=2.31.0"]
 
 [tool.setuptools]
 py-modules = ["run"]
