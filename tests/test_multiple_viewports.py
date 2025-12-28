@@ -1,9 +1,8 @@
 """Tests for Test a Page (Multiple Viewports) example from SKILL.md."""
 
 from pathlib import Path
-from textwrap import dedent
 from playwright.sync_api import sync_playwright
-from conftest import extract_markdown_code
+from conftest import extract_markdown_code, set_indent
 
 
 def extract_multiple_viewports_code():
@@ -60,8 +59,8 @@ class TestMultipleViewports:
 
             # Insert variable declarations after page = browser.new_page()
             elif "page = browser.new_page()" in line:
-                lines[i] = "    " + dedent(
-                    """\
+                lines[i] = set_indent(
+                    """
                     page = browser.new_page()
                     desktop_path = Path('/tmp/desktop.png')
                     mobile_path = Path('/tmp/mobile.png')
@@ -70,13 +69,13 @@ class TestMultipleViewports:
                     for path in [desktop_path, mobile_path]:
                         if path.exists():
                             path.unlink()"""
-                ).replace("\n", "\n    ")
+                )
                 modified = True
 
             # Add assertions after desktop screenshot
             elif "page.screenshot(path='/tmp/desktop.png', full_page=True)" in line:
-                lines[i] = "    " + dedent(
-                    """\
+                lines[i] = set_indent(
+                    """
                     page.screenshot(path=desktop_path, full_page=True)
                     # Test assertions for desktop
                     assert page.viewport_size["width"] == 1920
@@ -85,13 +84,13 @@ class TestMultipleViewports:
                     desktop_title = page.title()
                     assert desktop_title is not None
                     assert len(desktop_title) > 0"""
-                ).replace("\n", "\n    ")
+                )
                 modified = True
 
             # Add assertions after mobile screenshot
             elif "page.screenshot(path='/tmp/mobile.png', full_page=True)" in line:
-                lines[i] = "    " + dedent(
-                    """\
+                lines[i] = set_indent(
+                    """
                     page.screenshot(path=mobile_path, full_page=True)
                     # Test assertions for mobile
                     assert page.viewport_size["width"] == 375
@@ -101,7 +100,7 @@ class TestMultipleViewports:
                     mobile_title = page.title()
                     assert mobile_title is not None
                     assert len(mobile_title) > 0"""
-                ).replace("\n", "\n    ")
+                )
                 modified = True
 
         # Fail if no replacements were made (example code changed unexpectedly)
