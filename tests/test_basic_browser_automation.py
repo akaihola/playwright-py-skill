@@ -1,8 +1,7 @@
 """Tests for Basic Browser Automation example from API_REFERENCE.md."""
 
-from textwrap import dedent
 from playwright.sync_api import sync_playwright
-from conftest import extract_markdown_code
+from conftest import extract_markdown_code, set_indent
 
 
 def extract_basic_browser_automation_code(test_server_url=None):
@@ -61,8 +60,8 @@ class TestBasicBrowserAutomation:
 
         modified_code = modified_code.replace(
             "# Your automation here",
-            dedent(
-                f"""\
+            set_indent(
+                f"""
                 # Test assertions
                 assert browser is not None
                 assert browser.is_connected()
@@ -74,7 +73,7 @@ class TestBasicBrowserAutomation:
                 assert page.url.rstrip("/") == "{test_server_url.rstrip("/")}"
                 assert "Welcome" in page.content() or "Example Domain" in page.content()
                 """
-            ).replace("\n", "\n    "),
+            ),
         )
 
         exec(
@@ -92,8 +91,8 @@ class TestBasicBrowserAutomation:
 
         modified_code = modified_code.replace(
             "# Your automation here",
-            dedent(
-                """\
+            set_indent(
+                """
                 # Test assertions
                 assert browser is not None
                 assert browser.is_connected()
@@ -105,7 +104,7 @@ class TestBasicBrowserAutomation:
                 assert page.url == "https://example.com/"
                 assert "Example Domain" in page.content()
                 """
-            ).replace("\n", "\n    "),
+            ),
         )
 
         exec(modified_code, {"sync_playwright": sync_playwright})

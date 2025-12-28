@@ -6,9 +6,35 @@ import socket
 import threading
 from pathlib import Path
 
+import textwrap
+
 import pytest
 from flask import Flask, request, jsonify, redirect, url_for, session, render_template
 from playwright.sync_api import sync_playwright
+
+
+def set_indent(text: str, indent_spaces: int = 4) -> str:
+    """Dedent a string and re-indent it with the specified number of spaces.
+
+    Drops leading empty lines (including whitespace-only lines), dedents using
+    textwrap.dedent(), then re-indents using textwrap.indent().
+
+    Args:
+        text: Multi-line string which may begin with whitespace + newline
+        indent_spaces: Number of spaces of indentation to add (default: 4)
+
+    Returns:
+        Dedented and re-indented string
+    """
+    lines = text.split("\n")
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    text = "\n".join(lines)
+    text = textwrap.dedent(text)
+    prefix = " " * indent_spaces
+    text = textwrap.indent(text, prefix)
+
+    return text
 
 
 class DummyBrowser:
