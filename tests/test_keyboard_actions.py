@@ -1,8 +1,7 @@
 """Tests for Keyboard Actions examples from API_REFERENCE.md."""
 
-import re
-from pathlib import Path
 from playwright.sync_api import sync_playwright
+from conftest import extract_markdown_code
 
 
 def extract_keyboard_actions_code():
@@ -11,32 +10,19 @@ def extract_keyboard_actions_code():
     Returns:
         Modified code ready for execution
     """
-    api_ref_path = (
-        Path(__file__).parent.parent
-        / "skills"
-        / "playwright-py-skill"
-        / "API_REFERENCE.md"
+    return extract_markdown_code(
+        "Keyboard Actions",
+        expected_substrings=[
+            "page.keyboard.type('Hello World', delay=100)",
+            "page.keyboard.press('Control+A')",
+            "page.keyboard.press('Control+C')",
+            "page.keyboard.press('Control+V')",
+            "page.keyboard.press('Enter')",
+            "page.keyboard.press('Tab')",
+            "page.keyboard.press('Escape')",
+            "page.keyboard.press('ArrowDown')",
+        ],
     )
-
-    content = api_ref_path.read_text()
-
-    pattern = r"### Keyboard Actions\s*```python\s*(.*?)```"
-    match = re.search(pattern, content, re.DOTALL)
-
-    assert match, "Keyboard Actions example not found in API_REFERENCE.md"
-    extracted_code = match.group(1)
-
-    # Verify we extracted the expected code
-    assert "page.keyboard.type('Hello World', delay=100)" in extracted_code
-    assert "page.keyboard.press('Control+A')" in extracted_code
-    assert "page.keyboard.press('Control+C')" in extracted_code
-    assert "page.keyboard.press('Control+V')" in extracted_code
-    assert "page.keyboard.press('Enter')" in extracted_code
-    assert "page.keyboard.press('Tab')" in extracted_code
-    assert "page.keyboard.press('Escape')" in extracted_code
-    assert "page.keyboard.press('ArrowDown')" in extracted_code
-
-    return extracted_code
 
 
 class TestKeyboardActions:

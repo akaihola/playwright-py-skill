@@ -1,9 +1,8 @@
 """Tests for Basic Browser Automation example from API_REFERENCE.md."""
 
-import re
-from pathlib import Path
 from textwrap import dedent
 from playwright.sync_api import sync_playwright
+from conftest import extract_markdown_code
 
 
 def extract_basic_browser_automation_code(test_server_url=None):
@@ -15,27 +14,16 @@ def extract_basic_browser_automation_code(test_server_url=None):
     Returns:
         Modified code ready for execution with test assertions
     """
-    api_ref_path = (
-        Path(__file__).parent.parent
-        / "skills"
-        / "playwright-py-skill"
-        / "API_REFERENCE.md"
+    extracted_code = extract_markdown_code(
+        "Basic Browser Automation",
+        expected_substrings=[
+            "sync_playwright",
+            "chromium.launch",
+            "new_context",
+            "new_page",
+            "goto",
+        ],
     )
-
-    content = api_ref_path.read_text()
-
-    pattern = r"### Basic Browser Automation\s*```python\s*(.*?)```"
-    match = re.search(pattern, content, re.DOTALL)
-
-    assert match, "Basic Browser Automation example not found in API_REFERENCE.md"
-    extracted_code = match.group(1)
-
-    # Verify we extracted the expected code
-    assert "sync_playwright" in extracted_code
-    assert "chromium.launch" in extracted_code
-    assert "new_context" in extracted_code
-    assert "new_page" in extracted_code
-    assert "goto" in extracted_code
 
     # Modify the extracted code for testing:
     # 1. Replace headless=False with headless=True for CI

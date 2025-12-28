@@ -1,8 +1,7 @@
 """Tests for Test Structure pattern from API_REFERENCE.md."""
 
-import re
-from pathlib import Path
 from playwright.sync_api import sync_playwright, Page, expect
+from conftest import extract_markdown_code
 
 
 def extract_test_structure_code():
@@ -11,29 +10,16 @@ def extract_test_structure_code():
     Returns:
         Modified code ready for execution with test assertions
     """
-    api_ref_path = (
-        Path(__file__).parent.parent
-        / "skills"
-        / "playwright-py-skill"
-        / "API_REFERENCE.md"
+    return extract_markdown_code(
+        "Test Structure",
+        expected_substrings=[
+            "Page",
+            "expect",
+            'data-testid="submit-button"',
+            "to_have_url",
+            "to_have_text",
+        ],
     )
-
-    content = api_ref_path.read_text()
-
-    pattern = r"### Test Structure\s*```python\s*(.*?)```"
-    match = re.search(pattern, content, re.DOTALL)
-
-    assert match, "Test Structure example not found in API_REFERENCE.md"
-    extracted_code = match.group(1)
-
-    # Verify we extracted the expected code
-    assert "Page" in extracted_code
-    assert "expect" in extracted_code
-    assert 'data-testid="submit-button"' in extracted_code
-    assert "to_have_url" in extracted_code
-    assert "to_have_text" in extracted_code
-
-    return extracted_code
 
 
 class TestTestStructure:

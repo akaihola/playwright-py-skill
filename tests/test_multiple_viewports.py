@@ -1,9 +1,9 @@
 """Tests for Test a Page (Multiple Viewports) example from SKILL.md."""
 
-import re
 from pathlib import Path
 from textwrap import dedent
 from playwright.sync_api import sync_playwright
+from conftest import extract_markdown_code
 
 
 def extract_multiple_viewports_code():
@@ -12,25 +12,16 @@ def extract_multiple_viewports_code():
     Returns:
         Modified code ready for execution with test assertions
     """
-    skill_path = (
-        Path(__file__).parent.parent / "skills" / "playwright-py-skill" / "SKILL.md"
+    return extract_markdown_code(
+        "Test a Page (Multiple Viewports)",
+        markdown_file="SKILL.md",
+        expected_substrings=[
+            "sync_playwright",
+            "set_viewport_size",
+            "screenshot",
+            "page.title()",
+        ],
     )
-
-    content = skill_path.read_text()
-
-    pattern = r"### Test a Page \(Multiple Viewports\)\s*```python\s*(.*?)```"
-    match = re.search(pattern, content, re.DOTALL)
-
-    assert match, "Test a Page (Multiple Viewports) example not found in SKILL.md"
-    extracted_code = match.group(1)
-
-    # Verify we extracted the expected code
-    assert "sync_playwright" in extracted_code
-    assert "set_viewport_size" in extracted_code
-    assert "screenshot" in extracted_code
-    assert "page.title()" in extracted_code
-
-    return extracted_code
 
 
 class TestMultipleViewports:

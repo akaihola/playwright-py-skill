@@ -1,8 +1,8 @@
 """Tests for Mouse Actions examples from API_REFERENCE.md."""
 
 import re
-from pathlib import Path
 from playwright.sync_api import sync_playwright
+from conftest import extract_markdown_code
 
 
 def extract_mouse_actions_code():
@@ -11,33 +11,20 @@ def extract_mouse_actions_code():
     Returns:
         Modified code ready for execution
     """
-    api_ref_path = (
-        Path(__file__).parent.parent
-        / "skills"
-        / "playwright-py-skill"
-        / "API_REFERENCE.md"
+    return extract_markdown_code(
+        "Mouse Actions",
+        expected_substrings=[
+            "page.click('button')",
+            "page.click('button', button=\"right\")",
+            "page.dblclick('button')",
+            'page.click(\'button\', position={"x": 10, "y": 10})',
+            "page.hover('.menu-item')",
+            "page.drag_and_drop('#source', '#target')",
+            "page.locator('#source').hover()",
+            "page.mouse.down()",
+            "page.mouse.up()",
+        ],
     )
-
-    content = api_ref_path.read_text()
-
-    pattern = r"### Mouse Actions\s*```python\s*(.*?)```"
-    match = re.search(pattern, content, re.DOTALL)
-
-    assert match, "Mouse Actions example not found in API_REFERENCE.md"
-    extracted_code = match.group(1)
-
-    # Verify we extracted the expected code
-    assert "page.click('button')" in extracted_code
-    assert "page.click('button', button=\"right\")" in extracted_code
-    assert "page.dblclick('button')" in extracted_code
-    assert 'page.click(\'button\', position={"x": 10, "y": 10})' in extracted_code
-    assert "page.hover('.menu-item')" in extracted_code
-    assert "page.drag_and_drop('#source', '#target')" in extracted_code
-    assert "page.locator('#source').hover()" in extracted_code
-    assert "page.mouse.down()" in extracted_code
-    assert "page.mouse.up()" in extracted_code
-
-    return extracted_code
 
 
 class TestMouseActions:
