@@ -6,8 +6,6 @@
   <body>
     <h2>Keyboard Actions Test Page</h2>
     <p>Action Log:</p>
-    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
-    <script src="/static/keyboard-actions.js"></script>
     <hr />
 
     <!-- Type with delay test -->
@@ -25,5 +23,12 @@
     <!-- Special keys test -->
     <h2>Special Keys Test (Enter, Tab, Escape, ArrowDown)</h2>
     <input id="special-input" type="text" placeholder="Press special keys..." />
+
+    <!-- IMPORTANT: Keep action-log below form elements to avoid Playwright layout reflow bug.
+         When text inputs change and modify textContent, a <pre> element positioned above
+         checkboxes can shrink and move them up during state verification, causing test failures.
+         The script tag must remain at the end to ensure all form elements exist when it runs. -->
+    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
+    <script src="/static/keyboard-actions.js"></script>
   </body>
 </html>

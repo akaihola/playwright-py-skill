@@ -6,8 +6,6 @@
   <body>
     <h2>Mouse Actions Test Page</h2>
     <p>Action Log:</p>
-    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
-    <script src="/static/mouse-actions.js"></script>
     <hr />
 
     <!-- All click variations on ONE button -->
@@ -26,5 +24,12 @@
     <h2>Drag and Drop Test</h2>
     <div id="source" draggable="true" style="width: 100px; height: 50px; background: lightblue; margin: 10px;">Drag Me</div>
     <div id="target" style="width: 100px; height: 50px; background: lightgray; margin: 10px;">Drop Zone</div>
+
+    <!-- IMPORTANT: Keep action-log below form elements to avoid Playwright layout reflow bug.
+         When text inputs change and modify textContent, a <pre> element positioned above
+         checkboxes can shrink and move them up during state verification, causing test failures.
+         The script tag must remain at the end to ensure all form elements exist when it runs. -->
+    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
+    <script src="/static/mouse-actions.js"></script>
   </body>
 </html>
