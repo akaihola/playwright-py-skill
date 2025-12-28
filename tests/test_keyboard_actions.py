@@ -1,7 +1,7 @@
 """Tests for Keyboard Actions examples from API_REFERENCE.md."""
 
 from playwright.sync_api import sync_playwright
-from conftest import extract_markdown_code
+from conftest import extract_markdown_code, get_action_log
 
 
 def extract_keyboard_actions_code():
@@ -88,10 +88,7 @@ class TestKeyboardActions:
             exec("\n".join(modified_code), {"page": page})
 
             # Get action log and verify
-            log_content = page.locator("#action-log").text_content()
-            log_lines = [
-                line.strip() for line in log_content.strip().split("\n") if line.strip()
-            ]
+            log_lines = get_action_log(page)
 
             # Expected log entries
             # Type with delay should log each character as it's typed

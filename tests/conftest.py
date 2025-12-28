@@ -44,6 +44,19 @@ def extract_markdown_code(
     return extracted_code
 
 
+def get_action_log(page):
+    """Extract and parse action log content from the page.
+
+    Args:
+        page: Playwright Page object
+
+    Returns:
+        List of non-empty, stripped log lines from #action-log element
+    """
+    log_content = page.locator("#action-log").text_content()
+    return [line.strip() for line in log_content.strip().split("\n") if line.strip()]
+
+
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "test-secret-key"
 
