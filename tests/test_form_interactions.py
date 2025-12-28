@@ -71,32 +71,52 @@ class TestFormInteractions:
             # Replace file paths with actual temporary files
             lines = extracted_code.split("\n")
             modified_code = []
+            found_single_file = False
+            found_multiple_files = False
             for line in lines:
+                stripped_line = line.strip()
+
+                # Skip blank lines
+                if not stripped_line:
+                    continue
+
+                # Skip comment lines
+                if stripped_line.startswith("#"):
+                    continue
+
                 if "'path/to/file.pdf'" in line:
+                    found_single_file = True
                     modified_code.append(
                         line.replace("'path/to/file.pdf'", f"'{test_file1}'")
                     )
                 elif "['file1.pdf', 'file2.pdf']" in line:
+                    found_multiple_files = True
                     modified_code.append(
                         line.replace(
                             "['file1.pdf', 'file2.pdf']",
                             f"[r'{test_file2}', r'{test_file3}']",
                         )
                     )
+                elif "set_input_files" in line:
+                    assert False, f"Unrecognized line with file reference: {line}"
                 else:
                     modified_code.append(line)
+
+            assert found_single_file, "Expected to find single file upload pattern"
+            assert found_multiple_files, "Expected to find multiple file upload pattern"
 
             exec("\n".join(modified_code), {"page": page, "browser": DummyBrowser()})
 
         # Get action log and verify
         log_lines = get_action_log(page)
-        print(f"\n=== LOG LINES ===\n{log_lines}\n=== END LOG ===")
 
         # Expected log entries
         expected_log = [
-            "fill email user@example.com",  # fill by label
-            "fill name John Doe",  # fill by placeholder
-            "fill username ",  # clear (empty value after clear)
+            "fill email user@example.com",
+            "change email user@example.com",
+            "fill name John Doe",
+            "change name John Doe",
+            "fill username",  # clear (empty value)
             "fill username n",  # type with delay (first character)
             "fill username ne",  # type with delay
             "fill username new",  # type with delay
@@ -104,52 +124,16 @@ class TestFormInteractions:
             "fill username newus",  # type with delay
             "fill username newuse",  # type with delay
             "fill username newuser",  # type with delay
+            "change username newuser",
             "check agree",  # check checkbox by label
             "uncheck subscribe",  # uncheck checkbox by label
             "select option option2",  # select radio button by label
             "select country usa",  # select by value
             "select country usa",  # select by label (same value)
             "select country france",  # select by index (2)
-            "select country france",  # select by index (2)
-            "select country usa",  # final selection after all three selects
             "select colors red,blue,green",  # multi-select
-            f"upload file-upload {test_file1.name}:20",  # single file upload
-            f"upload file-upload {test_file2.name}:20,{test_file3.name}:20",  # multiple file upload
+            f"upload file-upload {test_file1.name}:19",  # single file upload
+            f"upload file-upload-multiple {test_file2.name}:19,{test_file3.name}:19",  # multiple file upload
         ]
 
-        # Verify all expected log entries are present
-        # We need to be more flexible with the clear/type sequence
-        # Just verify key events are present
-        assert "fill email user@example.com" in log_lines
-        assert "fill name John Doe" in log_lines
-        assert "check agree" in log_lines
-        assert "uncheck subscribe" in log_lines
-        assert "select option option2" in log_lines
-        assert "select country usa" in log_lines
-        assert "select country france" in log_lines
-        assert "select colors red,blue,green" in log_lines
-
-        # Verify clear happened (empty fill event)
-        clear_events = [line for line in log_lines if "fill username" in line]
-        assert any(line == "fill username" for line in clear_events), (
-            "Expected clear event (empty fill) for username"
-        )
-
-        # Verify type with delay (multiple fill events for username)
-        type_events = [
-            line
-            for line in clear_events
-            if line != "fill username" and "newuser" in line
-        ]
-
-        # Verify file uploads with actual file names
-        upload_events = [line for line in log_lines if line.startswith("upload")]
-        assert len(upload_events) == 2, (
-            f"Expected 2 upload events, got {len(upload_events)}"
-        )
-
-        # First upload: single file
-        assert test_file1.name in upload_events[0]
-        # Second upload: multiple files
-        assert test_file2.name in upload_events[1]
-        assert test_file3.name in upload_events[1]
+        assert log_lines == expected_log
