@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from textwrap import dedent
 from playwright.sync_api import sync_playwright
 
 
@@ -67,42 +68,54 @@ class TestMultipleViewports:
         # Insert variable declarations after the new_page() line
         modified_code = modified_code.replace(
             "    page = browser.new_page()",
-            """    page = browser.new_page()
-    import os
-    desktop_path = '/tmp/desktop.png'
-    mobile_path = '/tmp/mobile.png'
-    
-    # Clean up any existing screenshots
-    for path in [desktop_path, mobile_path]:
-        if os.path.exists(path):
-            os.remove(path)""",
+            "    "
+            + dedent(
+                """\
+                page = browser.new_page()
+                import os
+                desktop_path = '/tmp/desktop.png'
+                mobile_path = '/tmp/mobile.png'
+
+                # Clean up any existing screenshots
+                for path in [desktop_path, mobile_path]:
+                    if os.path.exists(path):
+                        os.remove(path)"""
+            ).replace("\n", "\n    "),
         )
 
         # Add assertions after desktop screenshot
         modified_code = modified_code.replace(
             "    page.screenshot(path='/tmp/desktop.png', full_page=True)",
-            """    page.screenshot(path=desktop_path, full_page=True)
-    # Test assertions for desktop
-    assert page.viewport_size["width"] == 1920
-    assert page.viewport_size["height"] == 1080
-    assert os.path.exists(desktop_path)
-    desktop_title = page.title()
-    assert desktop_title is not None
-    assert len(desktop_title) > 0""",
+            "    "
+            + dedent(
+                """\
+                page.screenshot(path=desktop_path, full_page=True)
+                # Test assertions for desktop
+                assert page.viewport_size["width"] == 1920
+                assert page.viewport_size["height"] == 1080
+                assert os.path.exists(desktop_path)
+                desktop_title = page.title()
+                assert desktop_title is not None
+                assert len(desktop_title) > 0"""
+            ).replace("\n", "\n    "),
         )
 
         # Add assertions after mobile screenshot
         modified_code = modified_code.replace(
             "    page.screenshot(path='/tmp/mobile.png', full_page=True)",
-            """    page.screenshot(path=mobile_path, full_page=True)
-    # Test assertions for mobile
-    assert page.viewport_size["width"] == 375
-    assert page.viewport_size["height"] == 667
-    assert os.path.exists(mobile_path)
-    # Verify title still works after viewport change
-    mobile_title = page.title()
-    assert mobile_title is not None
-    assert len(mobile_title) > 0""",
+            "    "
+            + dedent(
+                """\
+                page.screenshot(path=mobile_path, full_page=True)
+                # Test assertions for mobile
+                assert page.viewport_size["width"] == 375
+                assert page.viewport_size["height"] == 667
+                assert os.path.exists(mobile_path)
+                # Verify title still works after viewport change
+                mobile_title = page.title()
+                assert mobile_title is not None
+                assert len(mobile_title) > 0"""
+            ).replace("\n", "\n    "),
         )
 
         exec(
