@@ -218,6 +218,10 @@ def main():
         sys.modules["temp_module"] = module
         spec.loader.exec_module(module)
 
+        # Call main() function if it exists (bypasses __name__ == "__main__" guard)
+        if hasattr(module, "main"):
+            module.main()
+
         # Note: Temp file will be cleaned up on next run
         # This allows long-running async operations to complete safely
 

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "playwright-py-skill"
+version = "0.1.0"
+description = "Universal Playwright executor for Claude Code"
+readme = "README.md"
+authors = [{name = "Antti Kaihola", email = "13725+akaihola@users.noreply.github.com"}]
+requires-python = ">=3.13"
+dependencies = [
+    "playwright==1.56.0",
+    "aiohttp>=3.9.0",
+]
+
+[project.urls]
+Home = "https://github.com/akaihola/playwright-py-skill"
+
+[project.scripts]
+playwright-py-skill = "run:main"
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.setuptools]
+py-modules = ["run"]
+
+[tool.setuptools.package-data]
+run = ["lib/*", "SKILL.md"]
+
+[tool.setuptools.package-dir]
+"" = "skills/playwright-py-skill"
