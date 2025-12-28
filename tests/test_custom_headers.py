@@ -1,7 +1,6 @@
 """ "Tests for Custom HTTP Headers feature via environment variables."""
 
 import sys
-import re
 import json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -17,6 +16,7 @@ from lib.helpers import (
     get_context_options_with_headers,
     create_context,
 )
+from conftest import extract_json_from_page
 
 
 class TestGetExtraHeadersFromEnv:
@@ -229,15 +229,7 @@ class TestHeadersInHttpRequests:
             page.goto(f"{test_server_url}/headers")
             page.wait_for_load_state("networkidle")
 
-            # Extract JSON from <pre> tag (Flask dev server wraps JSON response)
-            page_content = page.content()
-
-            json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
-            if json_match:
-                response = json.loads(json_match.group(1))
-            else:
-                # Fallback: try parsing entire content
-                response = json.loads(page_content)
+            response = extract_json_from_page(page)
 
             # Check that our custom header was sent
             # The /headers endpoint returns request headers as JSON
@@ -266,14 +258,7 @@ class TestHeadersInHttpRequests:
             page.goto(f"{test_server_url}/headers")
             page.wait_for_load_state("networkidle")
 
-            # Extract JSON from <pre> tag (Flask dev server wraps JSON response)
-            page_content = page.content()
-
-            json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
-            if json_match:
-                response = json.loads(json_match.group(1))
-            else:
-                response = json.loads(page_content)
+            response = extract_json_from_page(page)
 
             # Check that all custom headers were sent
             assert "X-Automated-By" in response
@@ -302,14 +287,7 @@ class TestHeadersInHttpRequests:
                 page.goto(f"{test_server_url}/headers")
                 page.wait_for_load_state("networkidle")
 
-                # Extract JSON from <pre> tag (Flask dev server wraps JSON response)
-                page_content = page.content()
-
-                json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
-                if json_match:
-                    response = json.loads(json_match.group(1))
-                else:
-                    response = json.loads(page_content)
+                response = extract_json_from_page(page)
 
                 # Check that header is present on each request
                 assert "X-Request-Tracker" in response

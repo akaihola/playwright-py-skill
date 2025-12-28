@@ -57,6 +57,25 @@ def get_action_log(page):
     return [line.strip() for line in log_content.strip().split("\n") if line.strip()]
 
 
+def extract_json_from_page(page):
+    """Extract JSON from page content, handling Flask-wrapped <pre> tags.
+
+    Args:
+        page: Playwright Page object
+
+    Returns:
+        Parsed JSON data from the page content
+    """
+    import json
+
+    page_content = page.content()
+    json_match = re.search(r"<pre>(.*?)</pre>", page_content, re.DOTALL)
+    if json_match:
+        return json.loads(json_match.group(1))
+    else:
+        return json.loads(page_content)
+
+
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "test-secret-key"
 
