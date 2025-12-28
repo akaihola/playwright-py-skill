@@ -72,14 +72,13 @@ class TestMultipleViewports:
                 lines[i] = "    " + dedent(
                     """\
                     page = browser.new_page()
-                    import os
-                    desktop_path = '/tmp/desktop.png'
-                    mobile_path = '/tmp/mobile.png'
+                    desktop_path = Path('/tmp/desktop.png')
+                    mobile_path = Path('/tmp/mobile.png')
 
                     # Clean up any existing screenshots
                     for path in [desktop_path, mobile_path]:
-                        if os.path.exists(path):
-                            os.remove(path)"""
+                        if path.exists():
+                            path.unlink()"""
                 ).replace("\n", "\n    ")
                 modified = True
 
@@ -91,7 +90,7 @@ class TestMultipleViewports:
                     # Test assertions for desktop
                     assert page.viewport_size["width"] == 1920
                     assert page.viewport_size["height"] == 1080
-                    assert os.path.exists(desktop_path)
+                    assert desktop_path.exists()
                     desktop_title = page.title()
                     assert desktop_title is not None
                     assert len(desktop_title) > 0"""
@@ -106,7 +105,7 @@ class TestMultipleViewports:
                     # Test assertions for mobile
                     assert page.viewport_size["width"] == 375
                     assert page.viewport_size["height"] == 667
-                    assert os.path.exists(mobile_path)
+                    assert mobile_path.exists()
                     # Verify title still works after viewport change
                     mobile_title = page.title()
                     assert mobile_title is not None
@@ -120,5 +119,9 @@ class TestMultipleViewports:
         modified_code = "\n".join(lines)
         exec(
             modified_code,
-            {"sync_playwright": sync_playwright, "test_server_url": test_server_url},
+            {
+                "sync_playwright": sync_playwright,
+                "test_server_url": test_server_url,
+                "Path": Path,
+            },
         )
