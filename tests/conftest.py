@@ -8,6 +8,14 @@ from pathlib import Path
 
 import pytest
 from flask import Flask, request, jsonify, redirect, url_for, session, render_template
+from playwright.sync_api import sync_playwright
+
+
+class DummyBrowser:
+    """Dummy browser class for exec() namespace."""
+
+    def close(self):
+        pass
 
 
 def extract_markdown_code(
@@ -194,3 +202,17 @@ def test_server_url():
     time.sleep(0.5)
 
     yield f"http://127.0.0.1:{port}"
+
+
+@pytest.fixture
+def page():
+    """Fixture providing a Playwright page object with automatic cleanup."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context()
+        page = context.new_page()
+
+        try:
+            yield page
+        finally:
+            browser.close()
