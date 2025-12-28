@@ -3,7 +3,7 @@
 import re as python_re
 from playwright.sync_api import sync_playwright
 
-from conftest import extract_markdown_code
+from conftest import extract_markdown_code, get_action_log
 
 
 def extract_selectors_locators_code():
@@ -55,10 +55,7 @@ class TestSelectorsAndLocators:
             exec(modified_advanced_code, {"page": page, "re": python_re})
 
             # Get action log and verify
-            log_content = page.locator("#action-log").text_content()
-            log_lines = [
-                line.strip() for line in log_content.strip().split("\n") if line.strip()
-            ]
+            log_lines = get_action_log(page)
 
             # Expected log entries
             expected_log = [
