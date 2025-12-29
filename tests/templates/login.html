@@ -10,5 +10,9 @@
       <label>Password:</label><input name="password" type="password" /><br />
       <button type="submit">Login</button>
     </form>
+
+    <!-- IMPORTANT: Keep action-log below form elements to avoid Playwright layout reflow bug. -->
+    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
+    <script src="/static/login.js"></script>
   </body>
 </html>
