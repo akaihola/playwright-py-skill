@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Form Interactions Test</title>
+  </head>
+  <body>
+    <h2>Form Interactions Test Page</h2>
+    <p>Action Log:</p>
+    <hr />
+
+    <!-- Text input with label -->
+    <h2>Text Input with Label</h2>
+    <label for="email">Email:</label>
+    <input id="email" name="email" type="email" />
+
+    <hr />
+
+    <!-- Text input with placeholder -->
+    <h2>Text Input with Placeholder</h2>
+    <input id="name" type="text" placeholder="Enter your name" />
+
+    <hr />
+
+    <!-- Text input with id for clear and type -->
+    <h2>Clear and Type Test</h2>
+    <input id="username" type="text" value="Initial value" />
+
+    <hr />
+
+    <!-- Checkboxes -->
+    <h2>Checkboxes</h2>
+    <label for="agree">I agree</label>
+    <input id="agree" type="checkbox" aria-label="I agree" />
+    <br />
+    <label for="subscribe">Subscribe</label>
+    <input id="subscribe" type="checkbox" checked aria-label="Subscribe" />
+
+    <hr />
+
+    <!-- Radio buttons -->
+    <h2>Radio Buttons</h2>
+    <label for="option1">Option 1</label>
+    <input id="option1" name="option" type="radio" value="option1" aria-label="Option 1" />
+    <br />
+    <label for="option2">Option 2</label>
+    <input id="option2" name="option" type="radio" value="option2" aria-label="Option 2" />
+    <br />
+    <label for="option3">Option 3</label>
+    <input id="option3" name="option" type="radio" value="option3" aria-label="Option 3" />
+
+    <hr />
+
+    <!-- Single select dropdown -->
+    <h2>Single Select Dropdown</h2>
+    <select id="country" name="country">
+      <option value="usa">United States</option>
+      <option value="uk">United Kingdom</option>
+      <option value="france">France</option>
+      <option value="germany">Germany</option>
+      <option value="japan">Japan</option>
+    </select>
+
+    <hr />
+
+    <!-- Multi-select dropdown -->
+    <h2>Multi-select Dropdown</h2>
+    <select id="colors" name="colors" multiple>
+      <option value="red">Red</option>
+      <option value="blue">Blue</option>
+      <option value="green">Green</option>
+      <option value="yellow">Yellow</option>
+      <option value="purple">Purple</option>
+    </select>
+
+    <hr />
+
+    <!-- File upload -->
+    <h2>File Upload (Single)</h2>
+    <input id="file-upload" type="file" />
+
+    <hr />
+
+    <!-- Multiple file upload -->
+    <h2>File Upload (Multiple)</h2>
+    <input id="file-upload-multiple" type="file" multiple />
+
+    <!-- IMPORTANT: Keep action-log below form elements to avoid Playwright layout reflow bug.
+         When text inputs change and modify textContent, a <pre> element positioned above
+         checkboxes can shrink and move them up during state verification, causing test failures.
+         The script tag must remain at the end to ensure all form elements exist when it runs. -->
+    <pre id="action-log" style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"></pre>
+    <script src="/static/form-interactions.js"></script>
+  </body>
+</html>

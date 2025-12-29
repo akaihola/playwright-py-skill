@@ -209,6 +209,12 @@ def keyboard_actions():
     return render_template("keyboard-actions.html")
 
 
+@app.route("/form-interactions")
+def form_interactions():
+    """Test page with various form elements."""
+    return render_template("form-interactions.html")
+
+
 @pytest.fixture(scope="session")
 def test_server_url():
     """Start Flask server on available port and return URL."""

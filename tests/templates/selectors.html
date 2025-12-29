@@ -6,11 +6,6 @@
   <body>
     <h2>Selectors Test Page</h2>
     <p>Action Log:</p>
-    <pre
-      id="action-log"
-      style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"
-    ></pre>
-    <script src="/static/selectors.js"></script>
     <hr />
     <h2>Data Attribute Selectors</h2>
     <hr />
@@ -99,5 +94,15 @@
         </button>
       </form>
     </div>
+
+    <!-- IMPORTANT: Keep action-log below form elements to avoid Playwright layout reflow bug.
+         When text inputs change and modify textContent, a <pre> element positioned above
+         checkboxes can shrink and move them up during state verification, causing test failures.
+         The script tag must remain at the end to ensure all form elements exist when it runs. -->
+    <pre
+      id="action-log"
+      style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc"
+    ></pre>
+    <script src="/static/selectors.js"></script>
   </body>
 </html>

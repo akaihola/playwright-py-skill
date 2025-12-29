@@ -195,7 +195,7 @@ page.select_option('select#colors', ['red', 'blue', 'green'])
 
 # File upload
 page.set_input_files('input[type="file"]', 'path/to/file.pdf')
-page.set_input_files('input[type="file"]', ['file1.pdf', 'file2.pdf'])
+page.set_input_files('#file-upload-multiple', ['file1.pdf', 'file2.pdf'])
 ```
 
 ### Mouse Actions
