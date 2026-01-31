@@ -305,18 +305,25 @@ def launch_browser(url=None, port=DEFAULT_CDP_PORT):
 def run_cdp_scriptlet(code, port):
     """Wrap user code in the CDP connect template and execute it."""
     code = dedent(code).strip()
-    wrapped = dedent(
-        f"""\
+    wrapped = (
+        dedent(
+            f"""\
         from playwright.sync_api import sync_playwright
 
         p = sync_playwright().start()
         browser = p.chromium.connect_over_cdp("http://localhost:{port}")
         page = browser.contexts[0].pages[0]
         try:
-        {indent(code, "    ")}
+        """
+        )
+        + indent(code, "    ")
+        + "\n"
+        + dedent(
+            """\
         finally:
             p.stop()
         """
+        )
     )
     execute_code_as_module(wrapped)
 
