@@ -176,8 +176,9 @@ def execute_code_as_module(code):
         sys.modules["temp_module"] = module
         spec.loader.exec_module(module)
 
-        if hasattr(module, "main"):
-            module.main()
+        main_fn = getattr(module, "main", None)
+        if callable(main_fn):
+            main_fn()
     finally:
         try:
             temp_file.unlink()
