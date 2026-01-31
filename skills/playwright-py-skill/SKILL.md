@@ -68,7 +68,7 @@ cd $SKILL_DIR
 uv run run.py --help
 ```
 
-This will automatically install Playwright via PEP 723 metadata. Chromium browser must already be installed (correct version for Playwright 1.56.0).
+This will automatically install Playwright via PEP 723 metadata. Chromium browser must already be installed (correct version for Playwright 1.57.0).
 
 ## Execution Pattern
 
@@ -85,7 +85,7 @@ cd $SKILL_DIR && uv run python -c "from lib.helpers import detect_dev_servers; i
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 # /tmp/playwright-test-page.py
@@ -122,7 +122,7 @@ cd $SKILL_DIR && uv run run.py /tmp/playwright-test-page.py
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 # /tmp/playwright-test-responsive.py
@@ -154,7 +154,7 @@ with sync_playwright() as p:
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 # /tmp/playwright-test-login.py
@@ -186,7 +186,7 @@ with sync_playwright() as p:
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 # /tmp/playwright-test-form.py
@@ -219,7 +219,7 @@ with sync_playwright() as p:
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 from playwright.sync_api import sync_playwright
@@ -257,7 +257,7 @@ with sync_playwright() as p:
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 from playwright.sync_api import sync_playwright
@@ -285,7 +285,7 @@ with sync_playwright() as p:
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "playwright==1.56.0",
+#     "playwright==1.57.0",
 # ]
 # ///
 # /tmp/playwright-test-responsive-full.py
@@ -442,7 +442,7 @@ For comprehensive Playwright API documentation, see [API_REFERENCE.md](API_REFER
 
 ```bash
 cd $SKILL_DIR && uv run run.py --help
-# This will auto-install playwright==1.56.0 via PEP 723
+# This will auto-install playwright==1.57.0 via PEP 723
 ```
 
 **Module not found:**
@@ -494,4 +494,4 @@ User: "Use 3001"
 - Test scripts written to `/tmp` for automatic cleanup (no clutter)
 - Code executes reliably with proper module resolution via `run.py`
 - Progressive disclosure - API_REFERENCE.md loaded only when advanced features needed
-- Chromium browser must be installed separately (correct version for Playwright 1.56.0)
+- Chromium browser must be installed separately (correct version for Playwright 1.57.0)
