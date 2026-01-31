@@ -14,21 +14,35 @@ Executes Playwright automation code from:
 - Inline code: uv run run.py 'await page.goto("...")'
 - Stdin: cat script.py | uv run run.py
 
+Interactive browser session mode:
+- Launch:  uv run run.py --open [URL]
+- Command: uv run run.py --cdp 'print(page.title())'
+- Both:    uv run run.py --open URL --cdp 'print(page.title())'
+- Close:   uv run run.py --close
+
 Ensures proper module resolution by running from skill directory.
 """
 
-import os
-import sys
-import tempfile
+import argparse
 import json
+import os
+import signal
+import socket
+import subprocess
+import sys
 import time
 from pathlib import Path
+from textwrap import dedent, indent
+
 import asyncio
 import aiohttp
 
 # Change to script directory for proper module resolution
 script_dir = Path(__file__).parent.resolve()
 os.chdir(script_dir)
+
+SESSION_FILE = Path("/tmp/pw-session.json")
+DEFAULT_CDP_PORT = 9222
 
 
 def check_playwright_installed():
@@ -41,17 +55,19 @@ def check_playwright_installed():
         return False
 
 
-def get_code_to_execute():
-    """Get code to execute from various sources."""
-    args = sys.argv[1:]
+def get_code_to_execute(args):
+    """Get code to execute from various sources.
 
+    Args:
+        args: list of positional arguments (file path, inline code, etc.)
+    """
     # Case 1: File path provided
-    if args and Path(args[0]).exists():
+    if args and "\n" not in args[0] and len(args[0]) < 256 and Path(args[0]).exists():
         file_path = Path(args[0]).resolve()
         print(f"📄 Executing file: {file_path}")
         return file_path.read_text()
 
-    # Case 2: File path-like argument but file doesn't exist (likely race condition)
+    # Case 2: File path-like argument but file doesn't exist
     if args and (".py" in args[0] or "/" in args[0] or "\\" in args[0]):
         print(f"❌ File not found: {args[0]}", file=sys.stderr)
         print(
@@ -66,7 +82,7 @@ def get_code_to_execute():
         print("⚡ Executing inline code")
         return " ".join(args)
 
-    # Case 3: Code from stdin
+    # Case 4: Code from stdin
     if not sys.stdin.isatty():
         print("📥 Reading from stdin")
         return sys.stdin.read()
@@ -93,24 +109,21 @@ def cleanup_old_temp_files():
             try:
                 file.unlink()
             except (OSError, IOError):
-                pass  # Ignore errors - file might be in use or already deleted
+                pass
     except (OSError, IOError):
-        pass  # Ignore directory read errors
+        pass
 
 
 def wrap_code_if_needed(code):
     """Wrap code in async function if not already wrapped."""
-    # Check if code already has PEP 723 metadata or proper Python structure
     has_pep723 = "# ///" in code and "script" in code.lower()
     has_import = "from playwright" in code or "import playwright" in code
     has_sync_playwright = "sync_playwright()" in code
     has_main = "def main():" in code or "if __name__" in code
 
-    # If it's already a complete script (PEP 723 or has sync_playwright), return as-is
     if has_pep723 or (has_import and (has_sync_playwright or has_main)):
         return code
 
-    # If it's just Playwright commands, wrap in full template
     if not has_import:
         return f'''from playwright.sync_api import sync_playwright
 from lib.helpers import *
@@ -139,13 +152,37 @@ if __name__ == "__main__":
     main()
 '''
 
-    # If has import but no main function
     return f"""def main():
     {code}
 
 if __name__ == "__main__":
     main()
 """
+
+
+def execute_code_as_module(code):
+    """Write code to a temp file, import and execute it as a module."""
+    import importlib.util
+
+    temp_file = script_dir / f".temp-execution-{time.time()}.py"
+    try:
+        temp_file.write_text(code)
+        spec = importlib.util.spec_from_file_location("temp_module", temp_file)
+        if spec is None:
+            raise RuntimeError(f"Failed to load module spec from {temp_file}")
+        if spec.loader is None:
+            raise RuntimeError(f"Failed to load module loader from {temp_file}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules["temp_module"] = module
+        spec.loader.exec_module(module)
+
+        if hasattr(module, "main"):
+            module.main()
+    finally:
+        try:
+            temp_file.unlink()
+        except (OSError, IOError):
+            pass
 
 
 async def detect_dev_servers(custom_ports=None):
@@ -185,46 +222,217 @@ async def detect_dev_servers(custom_ports=None):
     return detected_servers
 
 
-def main():
-    """Main execution function."""
-    print("🎭 Playwright Skill - Universal Executor\n")
+# ---------------------------------------------------------------------------
+# Interactive browser session helpers
+# ---------------------------------------------------------------------------
 
-    # Clean up old temp files from previous runs
-    cleanup_old_temp_files()
 
-    # Get code to execute
-    raw_code = get_code_to_execute()
-    code = wrap_code_if_needed(raw_code)
+def _find_chromium_binary():
+    """Find an available Chromium/Chrome binary on the system."""
+    import shutil
 
-    # Create temporary file for execution
-    temp_file = script_dir / f".temp-execution-{time.time()}.py"
+    for name in ("chromium", "chromium-browser", "google-chrome"):
+        path = shutil.which(name)
+        if path:
+            return path
+    return None
+
+
+def _read_session():
+    """Read the session state file. Returns dict or None."""
+    try:
+        return json.loads(SESSION_FILE.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
+def _write_session(pid, port):
+    """Write session state file."""
+    SESSION_FILE.write_text(json.dumps({"pid": pid, "port": port}))
+
+
+def _is_port_open(port, timeout=0.3):
+    """Check if a TCP port is accepting connections."""
+    try:
+        with socket.create_connection(("localhost", port), timeout=timeout):
+            return True
+    except (ConnectionRefusedError, OSError):
+        return False
+
+
+def wait_for_cdp(port, timeout=10.0):
+    """Poll until the CDP port is reachable."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if _is_port_open(port):
+            return True
+        time.sleep(0.3)
+    return False
+
+
+def launch_browser(url=None, port=DEFAULT_CDP_PORT):
+    """Launch Chromium with CDP enabled. Returns the PID."""
+    binary = _find_chromium_binary()
+    if binary is None:
+        print(
+            "❌ No Chromium/Chrome binary found (tried chromium, chromium-browser, google-chrome)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    cmd = [
+        binary,
+        f"--remote-debugging-port={port}",
+        "--no-first-run",
+        "--no-default-browser-check",
+    ]
+    if url:
+        cmd.append(url)
+
+    proc = subprocess.Popen(
+        cmd,
+        stdout=open("/tmp/chromium-cdp.log", "w"),
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+
+    _write_session(proc.pid, port)
+    print(f"Browser launched on CDP port {port} (PID {proc.pid})")
+    return proc.pid
+
+
+def run_cdp_scriptlet(code, port):
+    """Wrap user code in the CDP connect template and execute it."""
+    code = dedent(code).strip()
+    wrapped = dedent(
+        f"""\
+        from playwright.sync_api import sync_playwright
+
+        p = sync_playwright().start()
+        browser = p.chromium.connect_over_cdp("http://localhost:{port}")
+        page = browser.contexts[0].pages[0]
+        try:
+        {indent(code, "    ")}
+        finally:
+            p.stop()
+        """
+    )
+    execute_code_as_module(wrapped)
+
+
+def close_browser():
+    """Kill the browser process and remove the session file."""
+    session = _read_session()
+    if session is None:
+        print("No active browser session found.")
+        return
+
+    pid = session["pid"]
+    try:
+        os.kill(pid, signal.SIGTERM)
+        print(f"Browser (PID {pid}) terminated.")
+    except ProcessLookupError:
+        print(f"Browser (PID {pid}) was already stopped.")
 
     try:
-        # Write code to temp file
-        temp_file.write_text(code)
+        SESSION_FILE.unlink()
+    except FileNotFoundError:
+        pass
 
-        # Execute the code
-        print("🚀 Starting automation...\n")
 
-        # Import and execute the module
-        import importlib.util
+def _build_parser():
+    """Build the argument parser."""
+    parser = argparse.ArgumentParser(
+        description="Universal Playwright Executor for Claude Code",
+    )
+    parser.add_argument(
+        "--open",
+        nargs="?",
+        const="",
+        default=None,
+        metavar="URL",
+        help="Launch Chromium with CDP. Optionally navigate to URL.",
+    )
+    parser.add_argument(
+        "--cdp",
+        nargs="?",
+        const="",
+        default=None,
+        metavar="CODE",
+        help="Run a scriptlet against the live CDP browser.",
+    )
+    parser.add_argument(
+        "--close",
+        action="store_true",
+        help="Kill the browser and remove the session file.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=DEFAULT_CDP_PORT,
+        help=f"CDP port (default {DEFAULT_CDP_PORT}).",
+    )
+    return parser
 
-        spec = importlib.util.spec_from_file_location("temp_module", temp_file)
-        if spec is None:
-            raise RuntimeError(f"Failed to load module spec from {temp_file}")
-        if spec.loader is None:
-            raise RuntimeError(f"Failed to load module loader from {temp_file}")
-        module = importlib.util.module_from_spec(spec)
-        sys.modules["temp_module"] = module
-        spec.loader.exec_module(module)
 
-        # Call main() function if it exists (bypasses __name__ == "__main__" guard)
-        if hasattr(module, "main"):
-            module.main()
+def main():
+    """Main execution function."""
+    parser = _build_parser()
+    known, remaining = parser.parse_known_args()
 
-        # Note: Temp file will be cleaned up on next run
-        # This allows long-running async operations to complete safely
+    is_interactive = known.open is not None or known.cdp is not None or known.close
 
+    # ── Interactive session modes ──────────────────────────────────────
+    if is_interactive:
+        if known.close:
+            close_browser()
+            return
+
+        port = known.port
+
+        # --open (with optional --cdp)
+        if known.open is not None:
+            url = known.open or None
+            launch_browser(url=url, port=port)
+
+            if known.cdp is not None:
+                if not wait_for_cdp(port):
+                    print(
+                        f"❌ CDP port {port} did not become reachable in time.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+                cdp_code = get_code_to_execute([known.cdp] if known.cdp else [])
+                run_cdp_scriptlet(cdp_code, port)
+            return
+
+        # --cdp without --open
+        if known.cdp is not None:
+            session = _read_session()
+            if session:
+                port = session["port"]
+
+            if not _is_port_open(port):
+                print(
+                    f"❌ No browser session found on port {port} — did you run --open?",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+            cdp_code = get_code_to_execute([known.cdp] if known.cdp else [])
+            run_cdp_scriptlet(cdp_code, port)
+            return
+
+    # ── Default mode (existing behaviour) ─────────────────────────────
+    print("🎭 Playwright Skill - Universal Executor\n")
+    cleanup_old_temp_files()
+
+    raw_code = get_code_to_execute(remaining)
+    code = wrap_code_if_needed(raw_code)
+
+    print("🚀 Starting automation...\n")
+    try:
+        execute_code_as_module(code)
     except Exception as error:
         print(f"❌ Execution failed: {error}", file=sys.stderr)
         import traceback

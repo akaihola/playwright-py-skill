@@ -423,6 +423,135 @@ For comprehensive Playwright API documentation, see [API_REFERENCE.md](API_REFER
 - Debugging techniques
 - CI/CD integration
 
+## Interactive Browser Session
+
+When automating an **unknown page** where you can't predict selectors, DOM structure, or
+SPA behavior, use the interactive session mode instead of writing a monolithic script.
+This launches a persistent browser and lets you send small inspect/action commands one at
+a time, observing results between each step.
+
+**When to use interactive mode:**
+
+- The page structure is unknown or complex (SPAs, dynamic UIs)
+- Previous monolithic scripts failed due to wrong selectors or unexpected behavior
+- You need to explore the DOM before writing automation logic
+
+**When to use the default monolithic mode:**
+
+- The page structure is known or simple
+- You have working selectors from a previous run or from the user
+
+### Launch a persistent browser
+
+```bash
+cd $SKILL_DIR && uv run run.py --open https://example.com
+# Output: Browser launched on CDP port 9222 (PID 12345)
+```
+
+### Run short inspection/action commands
+
+Each `--cdp` command connects, runs, and disconnects. The browser stays open.
+
+```bash
+# Check page title and URL
+cd $SKILL_DIR && uv run run.py --cdp '
+print("Title:", page.title())
+print("URL:", page.url)
+'
+
+# Inspect all inputs on the page
+cd $SKILL_DIR && uv run run.py --cdp '
+info = page.evaluate("""() => Array.from(document.querySelectorAll("input")).map((el, i) => ({
+  i, visible: el.offsetParent !== null, placeholder: el.placeholder,
+  value: el.value, ariaExpanded: el.ariaExpanded,
+  rect: el.getBoundingClientRect()
+}))""")
+for x in info: print(x)
+'
+
+# Type into an input and observe the result
+cd $SKILL_DIR && uv run run.py --cdp '
+import time
+inp = page.locator("input").nth(0)
+inp.click()
+inp.type("search term", delay=100)
+time.sleep(2)
+options = page.evaluate("""() => Array.from(document.querySelectorAll("[role=option]"))
+  .slice(0, 10).map(el => ({text: el.innerText.substring(0, 60)}))""")
+print("Options:", options)
+'
+```
+
+### Launch and inspect in one shot
+
+```bash
+cd $SKILL_DIR && uv run run.py --open https://example.com --cdp '
+print("Title:", page.title())
+print("URL:", page.url)
+'
+```
+
+### Close the browser when done
+
+```bash
+cd $SKILL_DIR && uv run run.py --close
+```
+
+### Available variables in `--cdp` scriptlets
+
+The wrapper provides these pre-bound variables:
+
+- `page` — the first page/tab in the first browser context
+- `browser` — the CDP-connected browser instance
+- `p` — the Playwright instance (cleaned up automatically in `finally`)
+
+### CDP port
+
+The default port is 9222. Override with `--port`:
+
+```bash
+cd $SKILL_DIR && uv run run.py --open --port 9333 https://example.com
+cd $SKILL_DIR && uv run run.py --cdp --port 9333 'print(page.title())'
+```
+
+The port is saved in `/tmp/pw-session.json` so `--cdp` and `--close` auto-detect it.
+
+### Useful `page.evaluate()` inspection patterns
+
+| Goal                             | JavaScript                                                         |
+| -------------------------------- | ------------------------------------------------------------------ |
+| All inputs with metadata         | `Array.from(document.querySelectorAll('input')).map(...)`          |
+| Container HTML around an element | `el.closest('[class*="combobox"]').outerHTML.substring(0, 2000)`   |
+| Visibility check                 | `el.offsetParent !== null`                                         |
+| Bounding rect                    | `el.getBoundingClientRect()`                                       |
+| ARIA attributes                  | `el.ariaExpanded`, `el.getAttribute('aria-controls')`              |
+| Find by role                     | `document.querySelectorAll('[role=option]')`                       |
+| Full page text                   | `document.body.innerText.split(String.fromCharCode(10))`           |
+
+## Tips for SPAs and Unknown Pages
+
+- **`page.url` is a property, not a method.** Write `page.url`, not `page.url()`.
+- **`fill()` vs `type()` for React/Vue apps:** `page.locator.fill('text')` sets the value
+  directly, which may not trigger React/Vue event handlers. Use
+  `page.locator.type('text', delay=100)` to simulate keystrokes — this reliably triggers
+  autocomplete, combobox, and other custom input behavior in modern SPAs.
+- **Check `page.url` after navigation.** Sites may redirect to a different domain. A blind
+  script would miss this; interactive mode lets you discover it immediately.
+- **cmdk-style combobox pattern:** Many modern React apps use combobox components where:
+  - The input has `role="combobox"` and `aria-controls="..."`
+  - Typing triggers a search, results appear as `[role="option"]` elements
+  - The placeholder text may be a separate `<span>` overlay, not an HTML `placeholder`
+    attribute — so `input[placeholder=...]` selectors won't work.
+- **Inputs that swap visibility:** SPAs may have multiple `<input>` elements where only one
+  is visible at a time. After interacting with one, it may become invisible
+  (`offsetParent === null`, rect all zeros) and another appears. Check visibility between
+  steps using `el.offsetParent !== null` in `page.evaluate()`.
+- **Unicode / special characters in `page.evaluate()` JS strings:** Characters like `°` can
+  cause `SyntaxError` inside JavaScript string literals passed to `page.evaluate()`.
+  Workaround: use `String.fromCharCode(10)` for newline splitting instead of `\n` when
+  page content may contain special characters, or filter special characters on the Python
+  side instead of in JS.
+
 ## Tips
 
 - **CRITICAL: Detect servers FIRST** - Always run `detect_dev_servers()` before writing test code for localhost testing
