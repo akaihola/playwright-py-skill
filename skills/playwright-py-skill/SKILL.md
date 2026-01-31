@@ -491,6 +491,26 @@ print("URL:", page.url)
 '
 ```
 
+### Troubleshooting inline code
+
+If inline `--cdp` code causes shell escaping or parsing issues, **write the scriptlet to a
+file and pass the path instead** — never fall back to a monolithic script:
+
+```bash
+# Write scriptlet to a temp file
+cat > /tmp/inspect.py << 'EOF'
+print("Title:", page.title())
+print("URL:", page.url)
+EOF
+
+# Pass the file path to --cdp
+cd $SKILL_DIR && uv run run.py --cdp /tmp/inspect.py
+```
+
+**IMPORTANT:** Do not abandon interactive mode and write a full standalone Playwright script
+that launches its own browser. The interactive session exists precisely to avoid that pattern.
+If inline code fails, the file-path approach is always available.
+
 ### Close the browser when done
 
 ```bash
