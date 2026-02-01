@@ -226,6 +226,13 @@ interactive mode. This demonstrates that **Error 1 must be fixed first** — the
 workaround is the critical fallback, and if it's broken, agents have no choice but to abandon
 interactive mode entirely.
 
+### Status
+
+✅ **Mitigated.** Error 1 (the blocking bug) is now fixed, so the file-path fallback works.
+SKILL.md has been updated with prominent guidance in the interactive session section header
+warning agents never to abandon interactive mode, with a cross-reference to the file-path
+troubleshooting section.
+
 ---
 
 ## Error 4: Cookie banner not handled (silent failure)
@@ -250,7 +257,7 @@ interactive approach described in the doc.
 | --- | ------------------------------- | --------------------- | -------- | ---------------------- |
 | 1   | IndentationError (leading `\n`) | `run_cdp_scriptlet`   | Bug      | ✅ Fixed + tested      |
 | 2   | ENAMETOOLONG on inline code     | `get_code_to_execute` | Bug      | ✅ Fixed + tested      |
-| 3   | Agent fell back to monolithic   | Agent workflow        | Workflow | Reproduced (Session 2) |
+| 3   | Agent fell back to monolithic   | Agent workflow        | Workflow | ✅ Mitigated (SKILL.md guidance) |
 | 4   | Cookie banner not handled       | N/A (monolithic)      | Minor    | N/A                    |
 
 ## Key takeaway from Session 2

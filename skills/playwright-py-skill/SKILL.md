@@ -436,6 +436,11 @@ a time, observing results between each step.
 - Previous monolithic scripts failed due to wrong selectors or unexpected behavior
 - You need to explore the DOM before writing automation logic
 
+**CRITICAL: Never abandon interactive mode.** If inline `--cdp` code fails due to shell
+escaping issues, write the scriptlet to a temp file and pass the file path instead (see
+"Troubleshooting inline code" below). Do NOT fall back to writing a standalone script that
+launches its own browser — that defeats the purpose of interactive sessions.
+
 **When to use the default monolithic mode:**
 
 - The page structure is known or simple
