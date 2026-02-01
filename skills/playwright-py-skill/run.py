@@ -68,7 +68,15 @@ def get_code_to_execute(args):
         return file_path.read_text()
 
     # Case 2: File path-like argument but file doesn't exist
-    if args and (".py" in args[0] or "/" in args[0] or "\\" in args[0]):
+    # Only treat as a file path if it looks like a path (no newlines, short, has
+    # path-like characteristics). This avoids misidentifying inline code that
+    # happens to contain "/", ".py", or "\" as a file path.
+    if (
+        args
+        and "\n" not in args[0]
+        and len(args[0]) < 256
+        and (".py" in args[0] or "/" in args[0] or "\\" in args[0])
+    ):
         print(f"❌ File not found: {args[0]}", file=sys.stderr)
         print(
             "⏱️  This may be a race condition - the file may still be being written.",

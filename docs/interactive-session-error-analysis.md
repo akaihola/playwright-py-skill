@@ -249,7 +249,7 @@ interactive approach described in the doc.
 | #   | Error                           | Component             | Severity | Status                 |
 | --- | ------------------------------- | --------------------- | -------- | ---------------------- |
 | 1   | IndentationError (leading `\n`) | `run_cdp_scriptlet`   | Bug      | ✅ Fixed + tested      |
-| 2   | ENAMETOOLONG on inline code     | `get_code_to_execute` | Bug      | Fixed + new variant    |
+| 2   | ENAMETOOLONG on inline code     | `get_code_to_execute` | Bug      | ✅ Fixed + tested      |
 | 3   | Agent fell back to monolithic   | Agent workflow        | Workflow | Reproduced (Session 2) |
 | 4   | Cookie banner not handled       | N/A (monolithic)      | Minor    | N/A                    |
 
