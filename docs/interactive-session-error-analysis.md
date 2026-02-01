@@ -6,11 +6,13 @@ This document catalogs errors encountered during real sessions using the interac
 mode (`--open`, `--cdp`, `--close`) to scrape fmi.fi temperature forecasts, and diagnoses each
 against the design in `interactive-browser-session.md`.
 
-Two sessions have been analyzed:
+Three sessions have been analyzed:
 
 - **Session 1** (2025-01-31): Original session that discovered Errors 1–4.
 - **Session 2** (2025-01-31, ses_3ead6a6a): Follow-up session with claude-haiku-4-5. Confirmed
   Errors 1 and 3 still reproduce, and revealed a new variant of Error 2.
+- **Session 3** (2026-02-01): tokmanni.fi flashlight search. Confirmed all prior fixes hold;
+  no new code bugs found.
 
 ---
 
@@ -253,12 +255,41 @@ interactive approach described in the doc.
 
 ## Summary table
 
-| #   | Error                           | Component             | Severity | Status                 |
-| --- | ------------------------------- | --------------------- | -------- | ---------------------- |
-| 1   | IndentationError (leading `\n`) | `run_cdp_scriptlet`   | Bug      | ✅ Fixed + tested      |
-| 2   | ENAMETOOLONG on inline code     | `get_code_to_execute` | Bug      | ✅ Fixed + tested      |
+| #   | Error                           | Component             | Severity | Status                           |
+| --- | ------------------------------- | --------------------- | -------- | -------------------------------- |
+| 1   | IndentationError (leading `\n`) | `run_cdp_scriptlet`   | Bug      | ✅ Fixed + tested                |
+| 2   | ENAMETOOLONG on inline code     | `get_code_to_execute` | Bug      | ✅ Fixed + tested                |
 | 3   | Agent fell back to monolithic   | Agent workflow        | Workflow | ✅ Mitigated (SKILL.md guidance) |
-| 4   | Cookie banner not handled       | N/A (monolithic)      | Minor    | N/A                    |
+| 4   | Cookie banner not handled       | N/A (monolithic)      | Minor    | N/A                              |
+
+## Session 3 (2026-02-01): tokmanni.fi flashlight search
+
+### Context
+
+Interactive session searching for flashlights ("taskulamppu") on tokmanni.fi. Browser was
+opened with `--open`, then multiple `--cdp` scriptlets were run to inspect the page, type a
+search query, submit it, and extract product results.
+
+### Problems encountered
+
+Six problems were identified, but **none represent new code bugs**. All map to previously
+documented and fixed issues or to agent workflow patterns:
+
+| #   | Problem                                                                                                                                                        | Root cause                                                         | Maps to                                                                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| 1   | Shell escaping: backslash-escaped quotes in f-strings inside inline `--cdp` caused `SyntaxError: unexpected character after line continuation` (4 occurrences) | Shell strips backslashes before Python sees them                   | Error 2 (fixed)                                                         |
+| 2   | JS `SyntaxError` in `page.evaluate()` when inline `--cdp` contained complex JS strings with special characters (2 occurrences)                                 | Shell quote interactions mangled the JS string                     | Error 2 (fixed)                                                         |
+| 3   | `wait_for_load_state("networkidle")` timed out despite the page being fully loaded                                                                             | Site has persistent network activity (analytics, lazy-loading)     | Not a code bug — user code should use `"load"` or `wait_for_selector()` |
+| 4   | Product selectors returned wrong elements ("Lisää ostoskoriin" buttons instead of product names)                                                               | Agent didn't inspect DOM structure before writing selectors        | Agent workflow                                                          |
+| 5   | Agent kept retrying inline `--cdp` 7 times before switching to file-based scriptlets                                                                           | Didn't follow SKILL.md guidance to use file-based scriptlets early | Error 3 (mitigated)                                                     |
+| 6   | Cookie banner and navigation obscured product content; `handle_cookie_banner()` helper never used                                                              | Agent didn't use `lib/helpers.py` utilities                        | Agent workflow                                                          |
+
+### Verdict
+
+No new code changes needed. The Errors 1 and 2 fixes from Sessions 1–2 would have prevented
+problems 1, 2, and 5 if the agent had used file-based scriptlets as recommended. Problems 3, 4,
+and 6 are agent workflow issues addressable through better SKILL.md guidance rather than code
+changes.
 
 ## Key takeaway from Session 2
 

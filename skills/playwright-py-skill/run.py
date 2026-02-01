@@ -61,6 +61,11 @@ def get_code_to_execute(args):
     Args:
         args: list of positional arguments (file path, inline code, etc.)
     """
+    # Case 0: Explicit stdin via "-" argument
+    if args and args[0] == "-":
+        print("📥 Reading from stdin")
+        return sys.stdin.read()
+
     # Case 1: File path provided
     if args and "\n" not in args[0] and len(args[0]) < 256 and Path(args[0]).exists():
         file_path = Path(args[0]).resolve()
@@ -100,7 +105,13 @@ def get_code_to_execute(args):
     print("Usage:", file=sys.stderr)
     print("  uv run run.py script.py          # Execute file", file=sys.stderr)
     print("  uv run run.py 'code here'        # Execute inline", file=sys.stderr)
-    print("  cat script.py | uv run run.py    # Execute from stdin", file=sys.stderr)
+    print(
+        "  uv run run.py - <<'EOF'          # Execute from stdin (heredoc)",
+        file=sys.stderr,
+    )
+    print(
+        "  cat script.py | uv run run.py    # Execute from piped stdin", file=sys.stderr
+    )
     sys.exit(1)
 
 

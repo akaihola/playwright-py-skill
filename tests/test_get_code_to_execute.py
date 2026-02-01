@@ -59,3 +59,32 @@ class TestInlineCodeDetection:
         """Simple inline code without path-like chars works."""
         result = get_code_to_execute(["print('hello')"])
         assert result == "print('hello')"
+
+
+class TestStdinDash:
+    """Ensure '-' argument reads code from stdin."""
+
+    def test_dash_reads_from_stdin(self, monkeypatch):
+        """'--cdp -' should read code from stdin."""
+        from io import StringIO
+
+        monkeypatch.setattr("sys.stdin", StringIO('print("hello")\n'))
+        result = get_code_to_execute(["-"])
+        assert result == 'print("hello")\n'
+
+    def test_dash_reads_multiline_from_stdin(self, monkeypatch):
+        """'--cdp -' should read multiline code from stdin (heredoc use case)."""
+        from io import StringIO
+
+        code = 'import time\npage.click("button")\nprint(f"Title: {page.title()}")\n'
+        monkeypatch.setattr("sys.stdin", StringIO(code))
+        result = get_code_to_execute(["-"])
+        assert result == code
+
+    def test_dash_takes_precedence_over_file(self, tmp_path, monkeypatch):
+        """'-' should read stdin even if a file named '-' somehow exists."""
+        from io import StringIO
+
+        monkeypatch.setattr("sys.stdin", StringIO("from_stdin\n"))
+        result = get_code_to_execute(["-"])
+        assert result == "from_stdin\n"
